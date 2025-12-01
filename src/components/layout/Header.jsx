@@ -26,8 +26,7 @@ import {
   Heart,
   Package
 } from "lucide-react";
-import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+
 
 const categories = [
   { name: "Immunity", slug: "immunity" },
@@ -169,10 +168,10 @@ export default function Header({ cartCount = 0 }) {
               <Heart className="w-5 h-5" />
             </Button>
 
-            {/* Account */}
-            <Link to={createPageUrl("Account")}>
+            {/* Contact */}
+            <Link to={createPageUrl("Contact")}>
               <Button variant="ghost" size="icon">
-                <User className="w-5 h-5" />
+                <Phone className="w-5 h-5" />
               </Button>
             </Link>
 

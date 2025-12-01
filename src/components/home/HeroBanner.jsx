@@ -80,11 +80,11 @@ export default function HeroBanner() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="relative"
           >
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-orange-50 to-amber-50">
               <img 
-                src="https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600&h=700&fit=crop" 
-                alt="Natural Herbal Products"
-                className="w-full h-[400px] md:h-[500px] object-cover"
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692d8181feb1ac797ea503b0/a6227f7df_WhatsAppImage2025-11-27at144627.jpg" 
+                alt="Noor Herbal Sea Buckthorn Juice"
+                className="w-full h-[400px] md:h-[500px] object-contain p-4"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
               
@@ -96,8 +96,8 @@ export default function HeroBanner() {
                     <p className="font-bold text-gray-900">Sea Buckthorn Juice</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm text-gray-500 line-through">₹599</p>
-                    <p className="font-bold text-orange-600 text-xl">₹499</p>
+                    <p className="text-sm text-gray-500 line-through">₹1250</p>
+                    <p className="font-bold text-orange-600 text-xl">₹999</p>
                   </div>
                 </div>
               </div>

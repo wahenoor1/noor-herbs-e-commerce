@@ -1,26 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
 
 export default function Layout({ children }) {
-  const { data: cartItems = [] } = useQuery({
-    queryKey: ['cart'],
-    queryFn: async () => {
-      try {
-        const user = await base44.auth.me();
-        if (user) {
-          return base44.entities.CartItem.filter({ created_by: user.email });
-        }
-      } catch (e) {
-        // Not logged in
-      }
-      return [];
-    }
-  });
+  const [cartCount, setCartCount] = useState(0);
 
-  const cartCount = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
+  useEffect(() => {
+    const updateCartCount = () => {
+      const cart = JSON.parse(localStorage.getItem('noorherbs_cart') || '[]');
+      const count = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+      setCartCount(count);
+    };
+
+    updateCartCount();
+    window.addEventListener('cartUpdated', updateCartCount);
+    return () => window.removeEventListener('cartUpdated', updateCartCount);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
