@@ -9,6 +9,9 @@ import FeaturedBanner from "@/components/home/FeaturedBanner";
 import TestimonialSection from "@/components/home/TestimonialSection";
 import { toast } from "sonner";
 
+// SEO-optimized home page for Noor Herbs - Ayurvedic, Nutraceutical, Sea Buckthorn Products
+// Keywords: sea buckthorn, ayurveda, nutra, herbal medicine, immunity booster, anti-aging, cancer prevention, omega fatty acids, vitamin c, ladakh
+
 export default function Home() {
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products'],
