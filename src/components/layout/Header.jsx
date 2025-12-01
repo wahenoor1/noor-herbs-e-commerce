@@ -19,7 +19,6 @@ import {
   Search, 
   ShoppingCart, 
   Menu, 
-  User, 
   Phone, 
   Leaf,
   ChevronDown,

@@ -6,7 +6,6 @@ import Checkout from './pages/Checkout';
 import OrderConfirmation from './pages/OrderConfirmation';
 import About from './pages/About';
 import Contact from './pages/Contact';
-import Account from './pages/Account';
 import TrackOrder from './pages/TrackOrder';
 import __Layout from './Layout.jsx';
 
@@ -20,7 +19,6 @@ export const PAGES = {
     "OrderConfirmation": OrderConfirmation,
     "About": About,
     "Contact": Contact,
-    "Account": Account,
     "TrackOrder": TrackOrder,
 }
 

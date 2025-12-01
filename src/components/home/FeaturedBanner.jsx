@@ -63,9 +63,9 @@ export default function FeaturedBanner() {
             {/* Image */}
             <div className="hidden lg:block">
               <img 
-                src="https://images.unsplash.com/photo-1587049352851-8d4e89133924?w=500&h=500&fit=crop" 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692d8181feb1ac797ea503b0/b8bd1ca3f_WhatsAppImage2025-11-27at144623.jpg" 
                 alt="Sea Buckthorn Juice"
-                className="rounded-2xl shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-500"
+                className="rounded-2xl shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-500 bg-white p-4"
               />
             </div>
           </div>
