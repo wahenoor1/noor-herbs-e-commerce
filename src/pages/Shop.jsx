@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import ProductCard from "@/components/products/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,43 +47,31 @@ export default function Shop() {
   const [sortBy, setSortBy] = useState("featured");
   const [showBestsellers, setShowBestsellers] = useState(false);
   
-  const queryClient = useQueryClient();
-
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products'],
     queryFn: () => base44.entities.Product.list()
   });
 
-  const addToCartMutation = useMutation({
-    mutationFn: async (product) => {
-      const user = await base44.auth.me();
-      const existingItems = await base44.entities.CartItem.filter({ 
-        product_id: product.id,
-        created_by: user.email 
-      });
-      
-      if (existingItems.length > 0) {
-        return base44.entities.CartItem.update(existingItems[0].id, {
-          quantity: (existingItems[0].quantity || 1) + 1
-        });
-      }
-      
-      return base44.entities.CartItem.create({
+  const handleAddToCart = (product) => {
+    const cart = JSON.parse(localStorage.getItem('noorherbs_cart') || '[]');
+    const existingIndex = cart.findIndex(item => item.product_id === product.id);
+    
+    if (existingIndex > -1) {
+      cart[existingIndex].quantity += 1;
+    } else {
+      cart.push({
         product_id: product.id,
         product_name: product.name,
         product_image: product.image_url,
         price: product.price,
         quantity: 1
       });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
-      toast.success("Added to cart!");
-    },
-    onError: () => {
-      toast.error("Please login to add items to cart");
     }
-  });
+    
+    localStorage.setItem('noorherbs_cart', JSON.stringify(cart));
+    window.dispatchEvent(new Event('cartUpdated'));
+    toast.success("Added to cart!");
+  };
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
@@ -384,7 +372,7 @@ export default function Shop() {
                   >
                     <ProductCard 
                       product={product} 
-                      onAddToCart={() => addToCartMutation.mutate(product)} 
+                      onAddToCart={() => handleAddToCart(product)} 
                     />
                   </motion.div>
                 ))}

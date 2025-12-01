@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
@@ -29,8 +29,7 @@ export default function ProductDetails() {
   
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
-  
-  const queryClient = useQueryClient();
+  const [isAdding, setIsAdding] = useState(false);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', productId],
@@ -51,36 +50,28 @@ export default function ProductDetails() {
     enabled: !!product?.category
   });
 
-  const addToCartMutation = useMutation({
-    mutationFn: async () => {
-      const user = await base44.auth.me();
-      const existingItems = await base44.entities.CartItem.filter({ 
-        product_id: productId,
-        created_by: user.email 
-      });
-      
-      if (existingItems.length > 0) {
-        return base44.entities.CartItem.update(existingItems[0].id, {
-          quantity: (existingItems[0].quantity || 1) + quantity
-        });
-      }
-      
-      return base44.entities.CartItem.create({
+  const handleAddToCart = () => {
+    setIsAdding(true);
+    const cart = JSON.parse(localStorage.getItem('noorherbs_cart') || '[]');
+    const existingIndex = cart.findIndex(item => item.product_id === productId);
+    
+    if (existingIndex > -1) {
+      cart[existingIndex].quantity += quantity;
+    } else {
+      cart.push({
         product_id: productId,
         product_name: product.name,
         product_image: product.image_url,
         price: product.price,
         quantity: quantity
       });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
-      toast.success("Added to cart!");
-    },
-    onError: () => {
-      toast.error("Please login to add items to cart");
     }
-  });
+    
+    localStorage.setItem('noorherbs_cart', JSON.stringify(cart));
+    window.dispatchEvent(new Event('cartUpdated'));
+    toast.success("Added to cart!");
+    setIsAdding(false);
+  };
 
   if (isLoading) {
     return (
@@ -217,11 +208,11 @@ export default function ProductDetails() {
               {/* Actions */}
               <div className="flex gap-4 mb-8">
                 <Button 
-                  onClick={() => addToCartMutation.mutate()}
-                  disabled={addToCartMutation.isPending}
+                  onClick={handleAddToCart}
+                  disabled={isAdding}
                   className="flex-1 bg-orange-500 hover:bg-orange-600 text-white h-14 rounded-full text-lg"
                 >
-                  {addToCartMutation.isPending ? (
+                  {isAdding ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
                     <>
