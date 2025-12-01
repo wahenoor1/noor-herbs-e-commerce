@@ -1,6 +1,4 @@
-import React from 'react';
-import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
@@ -13,59 +11,50 @@ import {
   ArrowRight,
   Truck,
   Shield,
-  Tag,
-  Loader2
+  Tag
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
 export default function Cart() {
-  const queryClient = useQueryClient();
+  const [cartItems, setCartItems] = useState([]);
 
-  const { data: cartItems = [], isLoading } = useQuery({
-    queryKey: ['cart'],
-    queryFn: async () => {
-      try {
-        const user = await base44.auth.me();
-        if (user) {
-          return base44.entities.CartItem.filter({ created_by: user.email });
-        }
-      } catch (e) {
-        // Not logged in
-      }
-      return [];
-    }
-  });
+  useEffect(() => {
+    loadCart();
+    window.addEventListener('cartUpdated', loadCart);
+    return () => window.removeEventListener('cartUpdated', loadCart);
+  }, []);
 
-  const updateQuantityMutation = useMutation({
-    mutationFn: ({ id, quantity }) => {
-      if (quantity < 1) return base44.entities.CartItem.delete(id);
-      return base44.entities.CartItem.update(id, { quantity });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
-    }
-  });
+  const loadCart = () => {
+    const cart = JSON.parse(localStorage.getItem('noorherbs_cart') || '[]');
+    setCartItems(cart);
+  };
 
-  const removeItemMutation = useMutation({
-    mutationFn: (id) => base44.entities.CartItem.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
+  const updateQuantity = (index, newQuantity) => {
+    const cart = [...cartItems];
+    if (newQuantity < 1) {
+      cart.splice(index, 1);
       toast.success("Item removed from cart");
+    } else {
+      cart[index].quantity = newQuantity;
     }
-  });
+    localStorage.setItem('noorherbs_cart', JSON.stringify(cart));
+    setCartItems(cart);
+    window.dispatchEvent(new Event('cartUpdated'));
+  };
+
+  const removeItem = (index) => {
+    const cart = [...cartItems];
+    cart.splice(index, 1);
+    localStorage.setItem('noorherbs_cart', JSON.stringify(cart));
+    setCartItems(cart);
+    window.dispatchEvent(new Event('cartUpdated'));
+    toast.success("Item removed from cart");
+  };
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const shipping = subtotal >= 500 ? 0 : 50;
   const total = subtotal + shipping;
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-      </div>
-    );
-  }
 
   if (cartItems.length === 0) {
     return (
@@ -95,9 +84,9 @@ export default function Cart() {
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
             <AnimatePresence>
-              {cartItems.map((item) => (
+              {cartItems.map((item, index) => (
                 <motion.div
-                  key={item.id}
+                  key={item.product_id}
                   layout
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -107,9 +96,9 @@ export default function Cart() {
                   {/* Image */}
                   <div className="w-full md:w-32 h-32 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
                     <img 
-                      src={item.product_image || "https://images.unsplash.com/photo-1607346256330-dee7af15f7c5?w=200&h=200&fit=crop"} 
+                      src={item.product_image || "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692d8181feb1ac797ea503b0/b8bd1ca3f_WhatsAppImage2025-11-27at144623.jpg"} 
                       alt={item.product_name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                   </div>
 
@@ -125,7 +114,7 @@ export default function Cart() {
                         <p className="text-lg font-bold text-gray-900 mt-1">₹{item.price}</p>
                       </div>
                       <button 
-                        onClick={() => removeItemMutation.mutate(item.id)}
+                        onClick={() => removeItem(index)}
                         className="text-gray-400 hover:text-red-500 transition-colors p-2"
                       >
                         <Trash2 className="w-5 h-5" />
@@ -136,20 +125,14 @@ export default function Cart() {
                     <div className="flex items-center justify-between mt-4">
                       <div className="flex items-center border rounded-full">
                         <button 
-                          onClick={() => updateQuantityMutation.mutate({ 
-                            id: item.id, 
-                            quantity: item.quantity - 1 
-                          })}
+                          onClick={() => updateQuantity(index, item.quantity - 1)}
                           className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-l-full"
                         >
                           <Minus className="w-4 h-4" />
                         </button>
                         <span className="w-12 text-center font-medium">{item.quantity}</span>
                         <button 
-                          onClick={() => updateQuantityMutation.mutate({ 
-                            id: item.id, 
-                            quantity: item.quantity + 1 
-                          })}
+                          onClick={() => updateQuantity(index, item.quantity + 1)}
                           className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-r-full"
                         >
                           <Plus className="w-4 h-4" />

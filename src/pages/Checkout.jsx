@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +19,8 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 
 export default function Checkout() {
-  const queryClient = useQueryClient();
+  const [cartItems, setCartItems] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -33,24 +33,27 @@ export default function Checkout() {
     payment_method: 'cod'
   });
 
-  const { data: cartItems = [], isLoading } = useQuery({
-    queryKey: ['cart'],
-    queryFn: async () => {
-      const user = await base44.auth.me();
-      if (user) {
-        return base44.entities.CartItem.filter({ created_by: user.email });
-      }
-      return [];
-    }
-  });
+  useEffect(() => {
+    const cart = JSON.parse(localStorage.getItem('noorherbs_cart') || '[]');
+    setCartItems(cart);
+  }, []);
 
-  const createOrderMutation = useMutation({
-    mutationFn: async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.customer_name || !formData.customer_phone || !formData.shipping_address || !formData.city || !formData.pincode) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
       const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
       const shipping = subtotal >= 500 ? 0 : 50;
+      const orderNumber = `NH${Date.now().toString().slice(-8)}`;
       
-      const order = await base44.entities.Order.create({
-        order_number: `NH${Date.now().toString().slice(-8)}`,
+      await base44.entities.Order.create({
+        order_number: orderNumber,
         ...formData,
         items: cartItems.map(item => ({
           product_id: item.product_id,
@@ -65,42 +68,21 @@ export default function Checkout() {
       });
 
       // Clear cart
-      for (const item of cartItems) {
-        await base44.entities.CartItem.delete(item.id);
-      }
+      localStorage.setItem('noorherbs_cart', JSON.stringify([]));
+      window.dispatchEvent(new Event('cartUpdated'));
 
-      return order;
-    },
-    onSuccess: (order) => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
       toast.success("Order placed successfully!");
-      window.location.href = createPageUrl(`OrderConfirmation?order=${order.order_number}`);
-    },
-    onError: () => {
+      window.location.href = createPageUrl(`OrderConfirmation?order=${orderNumber}`);
+    } catch (error) {
       toast.error("Failed to place order. Please try again.");
     }
-  });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!formData.customer_name || !formData.customer_phone || !formData.shipping_address || !formData.city || !formData.pincode) {
-      toast.error("Please fill all required fields");
-      return;
-    }
-    createOrderMutation.mutate();
+    setIsSubmitting(false);
   };
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const shipping = subtotal >= 500 ? 0 : 50;
   const total = subtotal + shipping;
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-      </div>
-    );
-  }
 
   if (cartItems.length === 0) {
     return (
@@ -271,12 +253,12 @@ export default function Checkout() {
                 {/* Items */}
                 <div className="space-y-4 mb-6">
                   {cartItems.map((item) => (
-                    <div key={item.id} className="flex gap-3">
+                    <div key={item.product_id} className="flex gap-3">
                       <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                         <img 
-                          src={item.product_image || "https://images.unsplash.com/photo-1607346256330-dee7af15f7c5?w=100&h=100&fit=crop"} 
+                          src={item.product_image || "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692d8181feb1ac797ea503b0/b8bd1ca3f_WhatsAppImage2025-11-27at144623.jpg"} 
                           alt={item.product_name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain"
                         />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -307,10 +289,10 @@ export default function Checkout() {
 
                 <Button 
                   type="submit"
-                  disabled={createOrderMutation.isPending}
+                  disabled={isSubmitting}
                   className="w-full bg-orange-500 hover:bg-orange-600 h-14 rounded-full text-lg"
                 >
-                  {createOrderMutation.isPending ? (
+                  {isSubmitting ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
                     <>
