@@ -2,6 +2,10 @@ import Home from './pages/Home';
 import Shop from './pages/Shop';
 import ProductDetails from './pages/ProductDetails';
 import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+import OrderConfirmation from './pages/OrderConfirmation';
+import About from './pages/About';
+import Contact from './pages/Contact';
 import __Layout from './Layout.jsx';
 
 
@@ -10,6 +14,10 @@ export const PAGES = {
     "Shop": Shop,
     "ProductDetails": ProductDetails,
     "Cart": Cart,
+    "Checkout": Checkout,
+    "OrderConfirmation": OrderConfirmation,
+    "About": About,
+    "Contact": Contact,
 }
 
 export const pagesConfig = {
