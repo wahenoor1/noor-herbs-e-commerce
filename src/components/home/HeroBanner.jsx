@@ -85,7 +85,7 @@ export default function HeroBanner() {
           >
             <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-orange-50 to-amber-50">
               <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692d8181feb1ac797ea503b0/a6227f7df_WhatsAppImage2025-11-27at144627.jpg" 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692d8181feb1ac797ea503b0/807f98568_ChatGPTImageDec2202510_50_37AM.png" 
                 alt="Noor Herbal Sea Buckthorn Juice - Ayurvedic Nutraceutical from Ladakh rich in Omega 3 6 9 7 Vitamin C for Immunity Anti-Aging Cancer Prevention"
                 className="w-full h-[400px] md:h-[500px] object-contain p-4"
               />
