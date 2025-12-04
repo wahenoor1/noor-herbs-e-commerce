@@ -70,7 +70,7 @@ export default function Checkout() {
       // Send email notification to admin
       const itemsList = cartItems.map(item => `${item.product_name} x ${item.quantity} - ₹${item.price * item.quantity}`).join('\n');
       await base44.integrations.Core.SendEmail({
-        to: "wahenoorenterprises2@gmail.com",
+        to: "wahenoorenterprises@gmail.com",
         subject: `New Order Received - ${orderNumber}`,
         body: `New order received!\n\nOrder Number: ${orderNumber}\n\nCustomer Details:\nName: ${formData.customer_name}\nPhone: ${formData.customer_phone}\nEmail: ${formData.customer_email || 'Not provided'}\n\nShipping Address:\n${formData.shipping_address}\n${formData.city}, ${formData.state}\nPincode: ${formData.pincode}\n\nOrder Items:\n${itemsList}\n\nSubtotal: ₹${subtotal}\nShipping: ${shipping === 0 ? 'Free' : '₹' + shipping}\nTotal: ₹${subtotal + shipping}\n\nPayment Method: ${formData.payment_method === 'cod' ? 'Cash on Delivery' : 'Online Payment'}`
       });
