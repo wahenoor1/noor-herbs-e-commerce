@@ -48,8 +48,9 @@ export default function OrderConfirmation() {
             <CheckCircle2 className="w-10 h-10 text-green-600" />
           </div>
           
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Order Confirmed!</h1>
-          <p className="text-gray-500 mb-6">Thank you for your order. We'll send you a confirmation shortly.</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Thank You for Your Order!</h1>
+          <p className="text-gray-500 mb-2">Your order has been placed successfully.</p>
+          <p className="text-gray-500 mb-6">We appreciate your trust in Noor Herbs. Our team will process your order and you'll receive updates via SMS.</p>
           
           <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-6 py-3 rounded-full font-medium">
             <Package className="w-5 h-5" />
