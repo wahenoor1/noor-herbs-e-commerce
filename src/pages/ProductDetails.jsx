@@ -271,6 +271,56 @@ export default function ProductDetails() {
           </Tabs>
         </div>
 
+        {/* Sea Buckthorn Video Reviews Section */}
+        {product.name?.toLowerCase().includes('sea buckthorn') && (
+          <div className="bg-white rounded-3xl p-6 md:p-10 mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Sea Buckthorn Benefits & Reviews</h2>
+            <p className="text-gray-500 mb-6">Watch what experts and customers say about Sea Buckthorn</p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="aspect-[9/16] rounded-2xl overflow-hidden bg-gray-100">
+                <iframe 
+                  src="https://www.youtube.com/embed/WVvOAac8W9w" 
+                  title="Sea Buckthorn Review 1"
+                  className="w-full h-full"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+              <div className="aspect-[9/16] rounded-2xl overflow-hidden bg-gray-100">
+                <iframe 
+                  src="https://www.youtube.com/embed/LGGJ-asDx1g" 
+                  title="Sea Buckthorn Review 2"
+                  className="w-full h-full"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+              <div className="aspect-[9/16] rounded-2xl overflow-hidden bg-gray-100">
+                <iframe 
+                  src="https://www.youtube.com/embed/emvg2MSOMgQ" 
+                  title="Sea Buckthorn Review 3"
+                  className="w-full h-full"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+              <div className="aspect-[9/16] rounded-2xl overflow-hidden bg-gray-100">
+                <iframe 
+                  src="https://www.youtube.com/embed/TGmyUxNwHYY" 
+                  title="Sea Buckthorn Review 4"
+                  className="w-full h-full"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div>
