@@ -12,8 +12,8 @@ export default function Layout({ children }) {
 
   // Scroll to top on page change
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location.pathname]);
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [location.pathname, location.search]);
 
   // Set SEO meta tags
   useEffect(() => {

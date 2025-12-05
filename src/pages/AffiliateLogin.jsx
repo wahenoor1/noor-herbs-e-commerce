@@ -199,44 +199,66 @@ export default function AffiliateLogin() {
     e.preventDefault();
     setIsLoading(true);
     
-    const existing = await base44.entities.Affiliate.filter({ email: registerData.email.toLowerCase() });
-    if (existing.length > 0) {
-      toast.error("Email already registered.");
-      setIsLoading(false);
-      return;
+    try {
+      // Check if email already exists
+      const existingEmail = await base44.entities.Affiliate.filter({ email: registerData.email.toLowerCase() });
+      if (existingEmail.length > 0) {
+        toast.error("This email is already registered. Please use a different email or login.");
+        setIsLoading(false);
+        return;
+      }
+      
+      // Check if phone already exists
+      const existingPhone = await base44.entities.Affiliate.filter({ phone: registerData.phone });
+      if (existingPhone.length > 0) {
+        toast.error("This phone number is already registered. Please use a different phone number.");
+        setIsLoading(false);
+        return;
+      }
+      
+      const affiliateId = 'AFF' + Date.now().toString().slice(-6) + Math.random().toString(36).substr(2, 4).toUpperCase();
+      
+      await base44.entities.Affiliate.create({
+        name: registerData.name,
+        email: registerData.email.toLowerCase(),
+        phone: registerData.phone,
+        password: registerData.password,
+        affiliate_id: affiliateId,
+        youtube_channel: registerData.youtube_channel,
+        instagram_handle: registerData.instagram_handle,
+        coupon_code: registerData.requested_coupon ? registerData.requested_coupon.toUpperCase() : '',
+        status: 'pending',
+        commission_type: 'percentage',
+        commission_value: 10,
+        coupon_discount_percent: 10,
+        total_clicks: 0,
+        total_orders: 0,
+        total_earnings: 0,
+        pending_earnings: 0,
+        paid_earnings: 0
+      });
+      
+      // Send email to admin about new registration
+      await base44.integrations.Core.SendEmail({
+        to: "noorherbs2025@gmail.com",
+        subject: "New Affiliate Registration - Noor Herbs",
+        body: `New affiliate registration:\n\nName: ${registerData.name}\nEmail: ${registerData.email}\nPhone: ${registerData.phone}\nYouTube: ${registerData.youtube_channel || 'N/A'}\nInstagram: ${registerData.instagram_handle || 'N/A'}\nRequested Coupon: ${registerData.requested_coupon || 'N/A'}\n\nPlease login to admin panel to approve or reject this affiliate.`
+      });
+      
+      // Send confirmation email to the affiliate
+      await base44.integrations.Core.SendEmail({
+        to: registerData.email,
+        subject: "Registration Received - Noor Herbs Affiliate Program",
+        body: `Dear ${registerData.name},\n\nThank you for registering for the Noor Herbs Affiliate Program!\n\nYour application has been received and is pending approval by our team. We will review your application and notify you via email once your account is approved.\n\nThis usually takes 24-48 hours.\n\nBest regards,\nNoor Herbs Team`
+      });
+      
+      toast.success("Registration successful!");
+      setRegisterData({ name: '', email: '', phone: '', password: '', youtube_channel: '', instagram_handle: '', requested_coupon: '' });
+      setRegistrationSuccess(true);
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast.error("Registration failed. Please try again.");
     }
-    
-    const affiliateId = 'AFF' + Date.now().toString().slice(-6) + Math.random().toString(36).substr(2, 4).toUpperCase();
-    
-    await base44.entities.Affiliate.create({
-      name: registerData.name,
-      email: registerData.email.toLowerCase(),
-      phone: registerData.phone,
-      password: registerData.password,
-      affiliate_id: affiliateId,
-      youtube_channel: registerData.youtube_channel,
-      instagram_handle: registerData.instagram_handle,
-      coupon_code: registerData.requested_coupon ? registerData.requested_coupon.toUpperCase() : '',
-      status: 'pending',
-      commission_type: 'percentage',
-      commission_value: 10,
-      coupon_discount_percent: 10,
-      total_clicks: 0,
-      total_orders: 0,
-      total_earnings: 0,
-      pending_earnings: 0,
-      paid_earnings: 0
-    });
-    
-    await base44.integrations.Core.SendEmail({
-      to: "noorherbs2025@gmail.com",
-      subject: "New Affiliate Registration - Noor Herbs",
-      body: `New affiliate registration:\n\nName: ${registerData.name}\nEmail: ${registerData.email}\nPhone: ${registerData.phone}\nYouTube: ${registerData.youtube_channel || 'N/A'}\nInstagram: ${registerData.instagram_handle || 'N/A'}\nRequested Coupon: ${registerData.requested_coupon || 'N/A'}`
-    });
-    
-    toast.success("Registration successful!");
-    setRegisterData({ name: '', email: '', phone: '', password: '', youtube_channel: '', instagram_handle: '', requested_coupon: '' });
-    setRegistrationSuccess(true);
     setIsLoading(false);
   };
 
@@ -251,21 +273,46 @@ export default function AffiliateLogin() {
   };
 
   // Admin functions
+  const [approvingId, setApprovingId] = useState(null);
+  const [disablingId, setDisablingId] = useState(null);
+
   const handleApprove = async (affiliate) => {
-    await base44.entities.Affiliate.update(affiliate.id, { status: 'approved' });
-    await base44.integrations.Core.SendEmail({
-      to: affiliate.email,
-      subject: "Affiliate Account Approved - Noor Herbs",
-      body: `Dear ${affiliate.name},\n\nYour affiliate account has been approved!\n\nYour Affiliate ID: ${affiliate.affiliate_id}\n${affiliate.coupon_code ? `Your Coupon Code: ${affiliate.coupon_code}` : ''}\n\nLogin at: ${window.location.href}\n\nBest regards,\nNoor Herbs Team`
-    });
-    toast.success("Affiliate approved!");
-    refetchAllAffiliates();
+    setApprovingId(affiliate.id);
+    try {
+      await base44.entities.Affiliate.update(affiliate.id, { status: 'approved' });
+      await base44.integrations.Core.SendEmail({
+        to: affiliate.email,
+        subject: "🎉 Affiliate Account Approved - Noor Herbs",
+        body: `Dear ${affiliate.name},\n\nCongratulations! Your affiliate account has been approved!\n\nYour Affiliate ID: ${affiliate.affiliate_id}\n${affiliate.coupon_code ? `Your Coupon Code: ${affiliate.coupon_code}` : 'You can create your own coupon code after login.'}\n\nYou can now login to your dashboard and start earning commissions.\n\nLogin at: ${window.location.href}\n\nBest regards,\nNoor Herbs Team`
+      });
+      toast.success("Affiliate approved & email sent!");
+      refetchAllAffiliates();
+    } catch (error) {
+      toast.error("Failed to approve");
+    }
+    setApprovingId(null);
   };
 
   const handleDisable = async (affiliate) => {
-    await base44.entities.Affiliate.update(affiliate.id, { status: 'disabled' });
-    toast.success("Affiliate disabled");
-    refetchAllAffiliates();
+    setDisablingId(affiliate.id);
+    try {
+      await base44.entities.Affiliate.update(affiliate.id, { status: 'disabled' });
+      toast.success("Affiliate disabled");
+      refetchAllAffiliates();
+    } catch (error) {
+      toast.error("Failed to disable");
+    }
+    setDisablingId(null);
+  };
+  
+  const handleReactivate = async (affiliate) => {
+    try {
+      await base44.entities.Affiliate.update(affiliate.id, { status: 'approved' });
+      toast.success("Affiliate reactivated!");
+      refetchAllAffiliates();
+    } catch (error) {
+      toast.error("Failed to reactivate");
+    }
   };
 
   const handleEditAffiliate = (affiliate) => {
@@ -367,6 +414,7 @@ export default function AffiliateLogin() {
             <TabsList>
               <TabsTrigger value="pending">Pending ({pendingAffiliates.length})</TabsTrigger>
               <TabsTrigger value="approved">Approved ({approvedAffiliates.length})</TabsTrigger>
+              <TabsTrigger value="disabled">Disabled ({allAffiliates.filter(a => a.status === 'disabled').length})</TabsTrigger>
               <TabsTrigger value="conversions">Conversions ({allConversions.length})</TabsTrigger>
             </TabsList>
 
@@ -382,11 +430,21 @@ export default function AffiliateLogin() {
                       {affiliate.coupon_code && <Badge className="mt-2">{affiliate.coupon_code}</Badge>}
                     </div>
                     <div className="flex gap-2">
-                      <Button onClick={() => handleApprove(affiliate)} className="bg-green-500 hover:bg-green-600">
-                        <CheckCircle className="w-4 h-4 mr-2" /> Approve
+                      <Button 
+                        onClick={() => handleApprove(affiliate)} 
+                        className="bg-green-500 hover:bg-green-600"
+                        disabled={approvingId === affiliate.id}
+                      >
+                        {approvingId === affiliate.id ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+                        Approve
                       </Button>
-                      <Button variant="destructive" onClick={() => handleDisable(affiliate)}>
-                        <XCircle className="w-4 h-4 mr-2" /> Reject
+                      <Button 
+                        variant="destructive" 
+                        onClick={() => handleDisable(affiliate)}
+                        disabled={disablingId === affiliate.id}
+                      >
+                        {disablingId === affiliate.id ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <XCircle className="w-4 h-4 mr-2" />}
+                        Reject
                       </Button>
                     </div>
                   </CardContent>
@@ -444,6 +502,27 @@ export default function AffiliateLogin() {
                   </tbody>
                 </table>
               </div>
+            </TabsContent>
+
+            <TabsContent value="disabled" className="mt-6 space-y-4">
+              {allAffiliates.filter(a => a.status === 'disabled').length === 0 ? (
+                <Card><CardContent className="py-12 text-center text-gray-500">No disabled affiliates</CardContent></Card>
+              ) : allAffiliates.filter(a => a.status === 'disabled').map(affiliate => (
+                <Card key={affiliate.id}>
+                  <CardContent className="p-6 flex flex-col md:flex-row justify-between gap-4">
+                    <div>
+                      <h3 className="font-bold text-lg">{affiliate.name}</h3>
+                      <p className="text-gray-500">{affiliate.email} | {affiliate.phone}</p>
+                      <Badge variant="destructive" className="mt-2">Disabled</Badge>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button onClick={() => handleReactivate(affiliate)} className="bg-green-500 hover:bg-green-600">
+                        <CheckCircle className="w-4 h-4 mr-2" /> Reactivate
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </TabsContent>
 
             <TabsContent value="conversions" className="mt-6">
@@ -727,12 +806,21 @@ export default function AffiliateLogin() {
             <TabsContent value="register">
               {registrationSuccess ? (
                 <CardContent className="py-12 text-center">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle className="w-8 h-8 text-green-600" />
+                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <CheckCircle className="w-10 h-10 text-green-600" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Registration Successful!</h3>
-                  <p className="text-gray-600 mb-4">Your account is pending approval. We'll notify you via email.</p>
-                  <Button variant="outline" onClick={() => setRegistrationSuccess(false)}>Register Another</Button>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">Registration Successful!</h3>
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
+                    <p className="text-green-800 font-medium mb-2">What happens next?</p>
+                    <ul className="text-sm text-green-700 text-left space-y-2">
+                      <li>✓ Your application has been submitted</li>
+                      <li>✓ Our team will review your application</li>
+                      <li>✓ You will receive an email once approved</li>
+                      <li>✓ Approval typically takes 24-48 hours</li>
+                    </ul>
+                  </div>
+                  <p className="text-gray-500 text-sm mb-4">A confirmation email has been sent to your registered email address.</p>
+                  <Button variant="outline" onClick={() => setRegistrationSuccess(false)}>Register Another Account</Button>
                 </CardContent>
               ) : (
                 <>
