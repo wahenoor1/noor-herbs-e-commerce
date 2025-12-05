@@ -13,14 +13,20 @@ import {
   Shield,
   Loader2,
   CheckCircle2,
-  ChevronLeft
+  ChevronLeft,
+  Tag
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { getAffiliateFromCookie, getAffiliateFromCoupon, calculateCommission } from "@/components/affiliate/AffiliateTracker";
 
 export default function Checkout() {
   const [cartItems, setCartItems] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -38,6 +44,29 @@ export default function Checkout() {
     setCartItems(cart);
   }, []);
 
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setIsApplyingCoupon(true);
+    
+    const affiliate = await getAffiliateFromCoupon(couponCode.trim());
+    if (affiliate) {
+      setAppliedCoupon(affiliate);
+      const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const discount = (subtotal * (affiliate.coupon_discount_percent || 10)) / 100;
+      setCouponDiscount(discount);
+      toast.success(`Coupon applied! ${affiliate.coupon_discount_percent}% discount`);
+    } else {
+      toast.error("Invalid coupon code");
+    }
+    setIsApplyingCoupon(false);
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponDiscount(0);
+    setCouponCode('');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.customer_name || !formData.customer_phone || !formData.shipping_address || !formData.city || !formData.pincode) {
@@ -50,9 +79,10 @@ export default function Checkout() {
     try {
       const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
       const shipping = subtotal >= 500 ? 0 : 50;
+      const finalTotal = subtotal - couponDiscount + shipping;
       const orderNumber = `NH${Date.now().toString().slice(-8)}`;
       
-      await base44.entities.Order.create({
+      const order = await base44.entities.Order.create({
         order_number: orderNumber,
         ...formData,
         items: cartItems.map(item => ({
@@ -63,16 +93,57 @@ export default function Checkout() {
         })),
         subtotal,
         shipping_cost: shipping,
-        total: subtotal + shipping,
+        total: finalTotal,
         status: 'pending'
       });
+
+      // Track affiliate conversion
+      let affiliateSource = null;
+      let trackingAffiliate = appliedCoupon; // Coupon affiliate takes priority
+      
+      if (!trackingAffiliate) {
+        // Check for cookie-based affiliate
+        const affIdFromCookie = getAffiliateFromCookie();
+        if (affIdFromCookie) {
+          const affiliates = await base44.entities.Affiliate.filter({ affiliate_id: affIdFromCookie, status: 'approved' });
+          if (affiliates.length > 0) {
+            trackingAffiliate = affiliates[0];
+            affiliateSource = 'link';
+          }
+        }
+      } else {
+        affiliateSource = 'coupon';
+      }
+
+      // Record affiliate conversion
+      if (trackingAffiliate) {
+        const commission = calculateCommission(trackingAffiliate, finalTotal);
+        
+        await base44.entities.AffiliateConversion.create({
+          affiliate_id: trackingAffiliate.affiliate_id,
+          order_id: order.id,
+          order_number: orderNumber,
+          order_total: finalTotal,
+          commission_amount: commission,
+          status: 'pending',
+          source: affiliateSource,
+          coupon_code_used: affiliateSource === 'coupon' ? trackingAffiliate.coupon_code : ''
+        });
+
+        // Update affiliate stats
+        await base44.entities.Affiliate.update(trackingAffiliate.id, {
+          total_orders: (trackingAffiliate.total_orders || 0) + 1,
+          total_earnings: (trackingAffiliate.total_earnings || 0) + commission,
+          pending_earnings: (trackingAffiliate.pending_earnings || 0) + commission
+        });
+      }
 
       // Send email notification to admin
       const itemsList = cartItems.map(item => `${item.product_name} x ${item.quantity} - ₹${item.price * item.quantity}`).join('\n');
       await base44.integrations.Core.SendEmail({
         to: "wahenoorenterprises@gmail.com",
         subject: `New Order Received - ${orderNumber}`,
-        body: `New order received!\n\nOrder Number: ${orderNumber}\n\nCustomer Details:\nName: ${formData.customer_name}\nPhone: ${formData.customer_phone}\nEmail: ${formData.customer_email || 'Not provided'}\n\nShipping Address:\n${formData.shipping_address}\n${formData.city}, ${formData.state}\nPincode: ${formData.pincode}\n\nOrder Items:\n${itemsList}\n\nSubtotal: ₹${subtotal}\nShipping: ${shipping === 0 ? 'Free' : '₹' + shipping}\nTotal: ₹${subtotal + shipping}\n\nPayment Method: ${formData.payment_method === 'cod' ? 'Cash on Delivery' : 'Online Payment'}`
+        body: `New order received!\n\nOrder Number: ${orderNumber}\n\nCustomer Details:\nName: ${formData.customer_name}\nPhone: ${formData.customer_phone}\nEmail: ${formData.customer_email || 'Not provided'}\n\nShipping Address:\n${formData.shipping_address}\n${formData.city}, ${formData.state}\nPincode: ${formData.pincode}\n\nOrder Items:\n${itemsList}\n\nSubtotal: ₹${subtotal}${couponDiscount > 0 ? `\nCoupon Discount: -₹${couponDiscount}` : ''}\nShipping: ${shipping === 0 ? 'Free' : '₹' + shipping}\nTotal: ₹${finalTotal}\n\nPayment Method: ${formData.payment_method === 'cod' ? 'Cash on Delivery' : 'Online Payment'}${trackingAffiliate ? `\n\nAffiliate: ${trackingAffiliate.name} (${trackingAffiliate.affiliate_id})` : ''}`
       });
 
       // Clear cart
@@ -90,7 +161,7 @@ export default function Checkout() {
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const shipping = subtotal >= 500 ? 0 : 50;
-  const total = subtotal + shipping;
+  const total = subtotal - couponDiscount + shipping;
 
   if (cartItems.length === 0) {
     return (
@@ -258,7 +329,45 @@ export default function Checkout() {
               <div className="bg-white rounded-2xl p-6 sticky top-24">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
 
-                {/* Items */}
+                                    {/* Coupon Code */}
+                                    <div className="mb-6">
+                                      {!appliedCoupon ? (
+                                        <div className="flex gap-2">
+                                          <Input 
+                                            placeholder="Coupon code" 
+                                            value={couponCode}
+                                            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                            className="rounded-full"
+                                          />
+                                          <Button 
+                                            type="button"
+                                            variant="outline" 
+                                            className="rounded-full px-6"
+                                            onClick={applyCoupon}
+                                            disabled={isApplyingCoupon}
+                                          >
+                                            {isApplyingCoupon ? <Loader2 className="w-4 h-4 animate-spin" /> : "Apply"}
+                                          </Button>
+                                        </div>
+                                      ) : (
+                                        <div className="flex items-center justify-between bg-green-50 p-3 rounded-xl">
+                                          <div className="flex items-center gap-2 text-green-700">
+                                            <Tag className="w-4 h-4" />
+                                            <span className="font-medium">{appliedCoupon.coupon_code}</span>
+                                            <span className="text-sm">(-{appliedCoupon.coupon_discount_percent}%)</span>
+                                          </div>
+                                          <button 
+                                            type="button"
+                                            onClick={removeCoupon}
+                                            className="text-red-500 text-sm hover:underline"
+                                          >
+                                            Remove
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* Items */}
                 <div className="space-y-4 mb-6">
                   {cartItems.map((item) => (
                     <div key={item.product_id} className="flex gap-3">
@@ -279,21 +388,27 @@ export default function Checkout() {
                 </div>
 
                 <div className="border-t pt-4 space-y-3 mb-6">
-                  <div className="flex justify-between text-gray-600">
-                    <span>Subtotal</span>
-                    <span>₹{subtotal}</span>
-                  </div>
-                  <div className="flex justify-between text-gray-600">
-                    <span>Shipping</span>
-                    <span>{shipping === 0 ? 'Free' : `₹${shipping}`}</span>
-                  </div>
-                  <div className="border-t pt-3">
-                    <div className="flex justify-between text-lg font-bold text-gray-900">
-                      <span>Total</span>
-                      <span>₹{total}</span>
-                    </div>
-                  </div>
-                </div>
+                                      <div className="flex justify-between text-gray-600">
+                                        <span>Subtotal</span>
+                                        <span>₹{subtotal}</span>
+                                      </div>
+                                      {couponDiscount > 0 && (
+                                        <div className="flex justify-between text-green-600">
+                                          <span>Coupon Discount</span>
+                                          <span>-₹{couponDiscount}</span>
+                                        </div>
+                                      )}
+                                      <div className="flex justify-between text-gray-600">
+                                        <span>Shipping</span>
+                                        <span>{shipping === 0 ? 'Free' : `₹${shipping}`}</span>
+                                      </div>
+                                      <div className="border-t pt-3">
+                                        <div className="flex justify-between text-lg font-bold text-gray-900">
+                                          <span>Total</span>
+                                          <span>₹{total}</span>
+                                        </div>
+                                      </div>
+                                    </div>
 
                 <Button 
                   type="submit"

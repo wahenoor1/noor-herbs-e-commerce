@@ -69,6 +69,7 @@ export default function Footer() {
               <li><Link to={createPageUrl("About")} className="hover:text-orange-400 transition-colors">About Us</Link></li>
               <li><Link to={createPageUrl("Contact")} className="hover:text-orange-400 transition-colors">Contact Us</Link></li>
               <li><Link to={createPageUrl("TrackOrder")} className="hover:text-orange-400 transition-colors">Track Order</Link></li>
+              <li><Link to={createPageUrl("AffiliateLogin")} className="hover:text-orange-400 transition-colors">Affiliate Program</Link></li>
             </ul>
           </div>
 
