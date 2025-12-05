@@ -626,7 +626,18 @@ export default function AffiliateLogin() {
   }
 
   // AFFILIATE DASHBOARD (after login)
-  if (loggedInAffiliate && affiliateData) {
+  if (loggedInAffiliate) {
+    // Show loading while fetching affiliate data
+    if (!affiliateData) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin text-orange-500 mx-auto mb-4" />
+            <p className="text-gray-500">Loading your dashboard...</p>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="min-h-screen bg-gray-50 py-8 px-4">
         <div className="max-w-5xl mx-auto">
@@ -778,7 +789,7 @@ export default function AffiliateLogin() {
         </div>
       </div>
     );
-  }
+  } // end of affiliate dashboard
 
   // LOGIN / REGISTER PAGE
   return (
