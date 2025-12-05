@@ -10,6 +10,7 @@ import TrackOrder from './pages/TrackOrder';
 import AffiliateLogin from './pages/AffiliateLogin';
 import AffiliateDashboard from './pages/AffiliateDashboard';
 import AdminAffiliates from './pages/AdminAffiliates';
+import TestEmail from './pages/TestEmail';
 import __Layout from './Layout.jsx';
 
 
@@ -26,6 +27,7 @@ export const PAGES = {
     "AffiliateLogin": AffiliateLogin,
     "AffiliateDashboard": AffiliateDashboard,
     "AdminAffiliates": AdminAffiliates,
+    "TestEmail": TestEmail,
 }
 
 export const pagesConfig = {
