@@ -119,7 +119,11 @@ export default function AffiliateLogin() {
   // Admin data
   const { data: allAffiliates = [], refetch: refetchAllAffiliates } = useQuery({
     queryKey: ['all-affiliates'],
-    queryFn: () => base44.entities.Affiliate.list('-created_date'),
+    queryFn: async () => {
+      const all = await base44.entities.Affiliate.list('-created_date');
+      // Filter out deleted duplicates
+      return all.filter(a => a.status !== 'deleted_duplicate');
+    },
     enabled: isAdmin
   });
 
@@ -151,7 +155,7 @@ export default function AffiliateLogin() {
       
       // Regular affiliate login - fetch all and find by email
       const allAffiliates = await base44.entities.Affiliate.list();
-      const affiliate = allAffiliates.find(a => a.email?.toLowerCase() === loginData.email.toLowerCase());
+      const affiliate = allAffiliates.find(a => a.email?.toLowerCase() === loginData.email.toLowerCase() && a.status !== 'deleted_duplicate');
       
       if (!affiliate) {
         setIsLoading(false);
@@ -220,7 +224,9 @@ export default function AffiliateLogin() {
     try {
       // Check if email already exists
       const allAffiliates = await base44.entities.Affiliate.list();
-      const existingEmail = allAffiliates.find(a => a.email?.toLowerCase() === registerData.email.toLowerCase());
+      const activeAffiliates = allAffiliates.filter(a => a.status !== 'deleted_duplicate');
+      
+      const existingEmail = activeAffiliates.find(a => a.email?.toLowerCase() === registerData.email.toLowerCase());
       if (existingEmail) {
         toast.error("This email is already registered. Please use a different email or login.");
         setIsLoading(false);
@@ -228,7 +234,7 @@ export default function AffiliateLogin() {
       }
       
       // Check if phone already exists
-      const existingPhone = allAffiliates.find(a => a.phone === registerData.phone);
+      const existingPhone = activeAffiliates.find(a => a.phone === registerData.phone);
       if (existingPhone) {
         toast.error("This phone number is already registered. Please use a different phone number.");
         setIsLoading(false);
