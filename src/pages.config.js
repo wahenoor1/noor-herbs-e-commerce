@@ -7,6 +7,9 @@ import OrderConfirmation from './pages/OrderConfirmation';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import TrackOrder from './pages/TrackOrder';
+import AffiliateLogin from './pages/AffiliateLogin';
+import AffiliateDashboard from './pages/AffiliateDashboard';
+import AdminAffiliates from './pages/AdminAffiliates';
 import __Layout from './Layout.jsx';
 
 
@@ -20,6 +23,9 @@ export const PAGES = {
     "About": About,
     "Contact": Contact,
     "TrackOrder": TrackOrder,
+    "AffiliateLogin": AffiliateLogin,
+    "AffiliateDashboard": AffiliateDashboard,
+    "AdminAffiliates": AdminAffiliates,
 }
 
 export const pagesConfig = {
