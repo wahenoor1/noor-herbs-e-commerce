@@ -28,6 +28,7 @@ export default function AffiliateLogin() {
     instagram_handle: '',
     requested_coupon: ''
   });
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -122,9 +123,11 @@ export default function AffiliateLogin() {
         body: `New affiliate registration:\n\nName: ${registerData.name}\nEmail: ${registerData.email}\nPhone: ${registerData.phone}\nYouTube: ${registerData.youtube_channel || 'N/A'}\nInstagram: ${registerData.instagram_handle || 'N/A'}\nRequested Coupon: ${registerData.requested_coupon || 'N/A'}\n\nPlease review and approve in the admin panel.`
       });
       
-      toast.success("Registration successful! Your account is pending approval. We'll notify you once approved.");
+      toast.success("Registration successful!");
       setRegisterData({ name: '', email: '', phone: '', password: '', youtube_channel: '', instagram_handle: '', requested_coupon: '' });
+      setRegistrationSuccess(true);
     } catch (error) {
+      console.error("Registration error:", error);
       toast.error("Registration failed. Please try again.");
     }
     
@@ -195,6 +198,29 @@ export default function AffiliateLogin() {
             </TabsContent>
             
             <TabsContent value="register">
+              {registrationSuccess ? (
+                <CardContent className="py-12 text-center">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Registration Successful!</h3>
+                  <p className="text-gray-600 mb-4">
+                    Your affiliate account is pending approval. Our team will review your application and notify you via email once approved.
+                  </p>
+                  <p className="text-sm text-gray-500 mb-6">
+                    This usually takes 24-48 hours.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setRegistrationSuccess(false)}
+                  >
+                    Register Another Account
+                  </Button>
+                </CardContent>
+              ) : (
+              <>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <UserPlus className="w-5 h-5" />
@@ -275,6 +301,8 @@ export default function AffiliateLogin() {
                   </Button>
                 </form>
               </CardContent>
+              </>
+              )}
             </TabsContent>
           </Tabs>
         </Card>
