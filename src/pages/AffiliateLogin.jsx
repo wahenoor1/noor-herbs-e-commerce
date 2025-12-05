@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, UserPlus, LogIn } from "lucide-react";
+import { Loader2, UserPlus, LogIn, KeyRound } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { createPageUrl } from "@/utils";
@@ -15,6 +15,8 @@ export default function AffiliateLogin() {
   
   // Login form
   const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
   
   // Register form
   const [registerData, setRegisterData] = useState({
@@ -115,7 +117,7 @@ export default function AffiliateLogin() {
       
       // Notify admin
       await base44.integrations.Core.SendEmail({
-        to: "wahenoorenterprises@gmail.com",
+        to: "noorherbs2025@gmail.com",
         subject: "New Affiliate Registration - Noor Herbs",
         body: `New affiliate registration:\n\nName: ${registerData.name}\nEmail: ${registerData.email}\nPhone: ${registerData.phone}\nYouTube: ${registerData.youtube_channel || 'N/A'}\nInstagram: ${registerData.instagram_handle || 'N/A'}\nRequested Coupon: ${registerData.requested_coupon || 'N/A'}\n\nPlease review and approve in the admin panel.`
       });
@@ -181,6 +183,13 @@ export default function AffiliateLogin() {
                   <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600" disabled={isLoading}>
                     {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Login"}
                   </Button>
+                  <button 
+                    type="button"
+                    onClick={() => setShowForgotPassword(true)}
+                    className="w-full text-sm text-orange-600 hover:underline mt-3"
+                  >
+                    Forgot Password?
+                  </button>
                 </form>
               </CardContent>
             </TabsContent>
@@ -269,6 +278,79 @@ export default function AffiliateLogin() {
             </TabsContent>
           </Tabs>
         </Card>
+
+        {/* Forgot Password Modal */}
+        {showForgotPassword && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <Card className="w-full max-w-md">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <KeyRound className="w-5 h-5" />
+                  Forgot Password
+                </CardTitle>
+                <CardDescription>Enter your email to receive password recovery instructions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="forgot-email">Email</Label>
+                    <Input
+                      id="forgot-email"
+                      type="email"
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      placeholder="Enter your registered email"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => {
+                        setShowForgotPassword(false);
+                        setForgotEmail('');
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      className="flex-1 bg-orange-500 hover:bg-orange-600"
+                      disabled={isLoading}
+                      onClick={async () => {
+                        if (!forgotEmail.trim()) {
+                          toast.error("Please enter your email");
+                          return;
+                        }
+                        setIsLoading(true);
+                        try {
+                          const affiliates = await base44.entities.Affiliate.filter({ email: forgotEmail.toLowerCase() });
+                          if (affiliates.length === 0) {
+                            toast.error("Email not found in our system");
+                          } else {
+                            const affiliate = affiliates[0];
+                            await base44.integrations.Core.SendEmail({
+                              to: "noorherbs2025@gmail.com",
+                              subject: "Affiliate Password Recovery Request",
+                              body: `Password recovery requested for:\n\nName: ${affiliate.name}\nEmail: ${affiliate.email}\nAffiliate ID: ${affiliate.affiliate_id}\nCurrent Password: ${affiliate.password}\n\nPlease contact the affiliate to provide their password or reset it.`
+                            });
+                            toast.success("Recovery request sent! Our team will contact you shortly.");
+                            setShowForgotPassword(false);
+                            setForgotEmail('');
+                          }
+                        } catch (error) {
+                          toast.error("Failed to send recovery request");
+                        }
+                        setIsLoading(false);
+                      }}
+                    >
+                      {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit"}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         <div className="mt-8 bg-white rounded-2xl p-6">
           <h3 className="font-bold text-gray-900 mb-4">Why Join Our Affiliate Program?</h3>
