@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import AffiliateTracker from "@/components/affiliate/AffiliateTracker";
@@ -7,6 +8,13 @@ import AffiliateTracker from "@/components/affiliate/AffiliateTracker";
 const SEO_KEYWORDS = "sea buckthorn juice, ayurvedic medicine, herbal supplements, nutraceuticals, immunity booster, anti-aging, cancer prevention, omega 3 6 9 7, vitamin C, ladakh herbs, natural wellness, organic supplements, herbal remedies, ayurveda, nutra products, health supplements, antioxidants, skin health, heart health, liver detox, weight management, digestive health, energy booster, natural immunity, DRDO approved, GMP certified, FSSAI approved, halal kosher certified";
 
 export default function Layout({ children }) {
+  const location = useLocation();
+
+  // Scroll to top on page change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   // Set SEO meta tags
   useEffect(() => {
     document.title = "Noor Herbs - Premium Ayurvedic & Herbal Products | Sea Buckthorn Juice from Ladakh";

@@ -20,6 +20,52 @@ import { toast } from "sonner";
 const ADMIN_EMAIL = "noorherbs2025@gmail.com";
 const ADMIN_PASSWORD = "Noor@1234";
 
+function CouponCreator({ affiliateId, onCreated }) {
+  const [couponCode, setCouponCode] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
+
+  const createCoupon = async () => {
+    if (!couponCode.trim() || couponCode.length < 4) {
+      toast.error("Coupon code must be at least 4 characters");
+      return;
+    }
+    setIsCreating(true);
+    
+    // Check if coupon already exists
+    const existing = await base44.entities.Affiliate.filter({ coupon_code: couponCode.toUpperCase() });
+    if (existing.length > 0) {
+      toast.error("This coupon code is already taken");
+      setIsCreating(false);
+      return;
+    }
+    
+    await base44.entities.Affiliate.update(affiliateId, { 
+      coupon_code: couponCode.toUpperCase(),
+      coupon_discount_percent: 10
+    });
+    toast.success("Coupon code created!");
+    onCreated();
+    setIsCreating(false);
+  };
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-gray-500 text-center">Create your own coupon code</p>
+      <div className="flex gap-2">
+        <Input 
+          placeholder="e.g. YOURNAME10" 
+          value={couponCode} 
+          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+          className="text-center font-bold"
+        />
+        <Button onClick={createCoupon} disabled={isCreating} className="bg-orange-500 hover:bg-orange-600">
+          {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function AffiliateLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const [loggedInAffiliate, setLoggedInAffiliate] = useState(null);
@@ -87,53 +133,58 @@ export default function AffiliateLogin() {
     e.preventDefault();
     setIsLoading(true);
     
-    // Check admin login
-    if (loginData.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && loginData.password === ADMIN_PASSWORD) {
-      localStorage.setItem('noorherbs_affiliate_session', JSON.stringify({ isAdmin: true }));
-      setIsAdmin(true);
-      toast.success("Admin login successful!");
-      setIsLoading(false);
-      return;
+    try {
+      // Check admin login
+      if (loginData.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && loginData.password === ADMIN_PASSWORD) {
+        localStorage.setItem('noorherbs_affiliate_session', JSON.stringify({ isAdmin: true }));
+        setIsAdmin(true);
+        toast.success("Admin login successful!");
+        setIsLoading(false);
+        return;
+      }
+      
+      // Regular affiliate login
+      const affiliates = await base44.entities.Affiliate.filter({ email: loginData.email.toLowerCase() });
+      
+      if (affiliates.length === 0) {
+        toast.error("Account not found. Please register first.");
+        setIsLoading(false);
+        return;
+      }
+      
+      const affiliate = affiliates[0];
+      
+      if (affiliate.password !== loginData.password) {
+        toast.error("Invalid password");
+        setIsLoading(false);
+        return;
+      }
+      
+      if (affiliate.status === 'pending') {
+        toast.error("Your account is pending approval.");
+        setIsLoading(false);
+        return;
+      }
+      
+      if (affiliate.status === 'disabled') {
+        toast.error("Your account has been disabled.");
+        setIsLoading(false);
+        return;
+      }
+      
+      const session = {
+        id: affiliate.id,
+        affiliate_id: affiliate.affiliate_id,
+        name: affiliate.name,
+        email: affiliate.email
+      };
+      localStorage.setItem('noorherbs_affiliate_session', JSON.stringify(session));
+      setLoggedInAffiliate(session);
+      toast.success("Login successful!");
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error("Login failed. Please try again.");
     }
-    
-    // Regular affiliate login
-    const affiliates = await base44.entities.Affiliate.filter({ email: loginData.email.toLowerCase() });
-    
-    if (affiliates.length === 0) {
-      toast.error("Account not found. Please register first.");
-      setIsLoading(false);
-      return;
-    }
-    
-    const affiliate = affiliates[0];
-    
-    if (affiliate.password !== loginData.password) {
-      toast.error("Invalid password");
-      setIsLoading(false);
-      return;
-    }
-    
-    if (affiliate.status === 'pending') {
-      toast.error("Your account is pending approval.");
-      setIsLoading(false);
-      return;
-    }
-    
-    if (affiliate.status === 'disabled') {
-      toast.error("Your account has been disabled.");
-      setIsLoading(false);
-      return;
-    }
-    
-    const session = {
-      id: affiliate.id,
-      affiliate_id: affiliate.affiliate_id,
-      name: affiliate.name,
-      email: affiliate.email
-    };
-    localStorage.setItem('noorherbs_affiliate_session', JSON.stringify(session));
-    setLoggedInAffiliate(session);
-    toast.success("Login successful!");
     setIsLoading(false);
   };
 
@@ -559,10 +610,10 @@ export default function AffiliateLogin() {
                         <Copy className="w-4 h-4" />
                       </Button>
                     </div>
-                    <p className="text-sm text-gray-500 mt-2">{affiliateData.coupon_discount_percent}% discount for customers</p>
+                    <p className="text-sm text-gray-500 mt-2">{affiliateData.coupon_discount_percent || 10}% discount for customers</p>
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-center">No coupon code assigned yet</p>
+                  <CouponCreator affiliateId={affiliateData.id} onCreated={refetchAffiliate} />
                 )}
               </CardContent>
             </Card>
