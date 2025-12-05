@@ -1,17 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, UserPlus, LogIn, KeyRound } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { 
+  Loader2, UserPlus, LogIn, KeyRound, LogOut, Copy, Link2, 
+  MousePointer, ShoppingCart, DollarSign, Users, Edit, CheckCircle, XCircle, TrendingUp
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { createPageUrl } from "@/utils";
+
+// Admin credentials
+const ADMIN_EMAIL = "noorherbs2025@gmail.com";
+const ADMIN_PASSWORD = "Noor@1234";
 
 export default function AffiliateLogin() {
   const [isLoading, setIsLoading] = useState(false);
+  const [loggedInAffiliate, setLoggedInAffiliate] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   
   // Login form
   const [loginData, setLoginData] = useState({ email: '', password: '' });
@@ -20,128 +32,611 @@ export default function AffiliateLogin() {
   
   // Register form
   const [registerData, setRegisterData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    password: '',
-    youtube_channel: '',
-    instagram_handle: '',
-    requested_coupon: ''
+    name: '', email: '', phone: '', password: '',
+    youtube_channel: '', instagram_handle: '', requested_coupon: ''
   });
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
+
+  // Admin edit
+  const [editingAffiliate, setEditingAffiliate] = useState(null);
+  const [editData, setEditData] = useState({});
+
+  // Check if already logged in
+  useEffect(() => {
+    const session = localStorage.getItem('noorherbs_affiliate_session');
+    if (session) {
+      const parsed = JSON.parse(session);
+      if (parsed.isAdmin) {
+        setIsAdmin(true);
+      } else {
+        setLoggedInAffiliate(parsed);
+      }
+    }
+  }, []);
+
+  // Fetch affiliate data for logged in user
+  const { data: affiliateData, refetch: refetchAffiliate } = useQuery({
+    queryKey: ['my-affiliate', loggedInAffiliate?.affiliate_id],
+    queryFn: async () => {
+      const affiliates = await base44.entities.Affiliate.filter({ affiliate_id: loggedInAffiliate.affiliate_id });
+      return affiliates[0];
+    },
+    enabled: !!loggedInAffiliate?.affiliate_id
+  });
+
+  const { data: myConversions = [] } = useQuery({
+    queryKey: ['my-conversions', loggedInAffiliate?.affiliate_id],
+    queryFn: () => base44.entities.AffiliateConversion.filter({ affiliate_id: loggedInAffiliate.affiliate_id }),
+    enabled: !!loggedInAffiliate?.affiliate_id
+  });
+
+  // Admin data
+  const { data: allAffiliates = [], refetch: refetchAllAffiliates } = useQuery({
+    queryKey: ['all-affiliates'],
+    queryFn: () => base44.entities.Affiliate.list('-created_date'),
+    enabled: isAdmin
+  });
+
+  const { data: allConversions = [] } = useQuery({
+    queryKey: ['all-conversions'],
+    queryFn: () => base44.entities.AffiliateConversion.list('-created_date'),
+    enabled: isAdmin
+  });
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     
-    try {
-      const affiliates = await base44.entities.Affiliate.filter({ email: loginData.email.toLowerCase() });
-      
-      if (affiliates.length === 0) {
-        toast.error("Account not found. Please register first.");
-        setIsLoading(false);
-        return;
-      }
-      
-      const affiliate = affiliates[0];
-      
-      if (affiliate.password !== loginData.password) {
-        toast.error("Invalid password");
-        setIsLoading(false);
-        return;
-      }
-      
-      if (affiliate.status === 'pending') {
-        toast.error("Your account is pending approval. Please wait.");
-        setIsLoading(false);
-        return;
-      }
-      
-      if (affiliate.status === 'disabled') {
-        toast.error("Your account has been disabled. Contact support.");
-        setIsLoading(false);
-        return;
-      }
-      
-      // Save affiliate session
-      localStorage.setItem('noorherbs_affiliate_session', JSON.stringify({
-        id: affiliate.id,
-        affiliate_id: affiliate.affiliate_id,
-        name: affiliate.name,
-        email: affiliate.email
-      }));
-      
-      toast.success("Login successful!");
-      window.location.href = createPageUrl("AffiliateDashboard");
-    } catch (error) {
-      toast.error("Login failed. Please try again.");
+    // Check admin login
+    if (loginData.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && loginData.password === ADMIN_PASSWORD) {
+      localStorage.setItem('noorherbs_affiliate_session', JSON.stringify({ isAdmin: true }));
+      setIsAdmin(true);
+      toast.success("Admin login successful!");
+      setIsLoading(false);
+      return;
     }
     
+    // Regular affiliate login
+    const affiliates = await base44.entities.Affiliate.filter({ email: loginData.email.toLowerCase() });
+    
+    if (affiliates.length === 0) {
+      toast.error("Account not found. Please register first.");
+      setIsLoading(false);
+      return;
+    }
+    
+    const affiliate = affiliates[0];
+    
+    if (affiliate.password !== loginData.password) {
+      toast.error("Invalid password");
+      setIsLoading(false);
+      return;
+    }
+    
+    if (affiliate.status === 'pending') {
+      toast.error("Your account is pending approval.");
+      setIsLoading(false);
+      return;
+    }
+    
+    if (affiliate.status === 'disabled') {
+      toast.error("Your account has been disabled.");
+      setIsLoading(false);
+      return;
+    }
+    
+    const session = {
+      id: affiliate.id,
+      affiliate_id: affiliate.affiliate_id,
+      name: affiliate.name,
+      email: affiliate.email
+    };
+    localStorage.setItem('noorherbs_affiliate_session', JSON.stringify(session));
+    setLoggedInAffiliate(session);
+    toast.success("Login successful!");
     setIsLoading(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('noorherbs_affiliate_session');
+    setLoggedInAffiliate(null);
+    setIsAdmin(false);
+    setLoginData({ email: '', password: '' });
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     
-    try {
-      // Check if email already exists
-      const existing = await base44.entities.Affiliate.filter({ email: registerData.email.toLowerCase() });
-      if (existing.length > 0) {
-        toast.error("Email already registered. Please login.");
-        setIsLoading(false);
-        return;
-      }
-      
-      // Generate unique affiliate ID
-      const affiliateId = 'AFF' + Date.now().toString().slice(-6) + Math.random().toString(36).substr(2, 4).toUpperCase();
-      
-      // Create affiliate
-      await base44.entities.Affiliate.create({
-        name: registerData.name,
-        email: registerData.email.toLowerCase(),
-        phone: registerData.phone,
-        password: registerData.password,
-        affiliate_id: affiliateId,
-        youtube_channel: registerData.youtube_channel,
-        instagram_handle: registerData.instagram_handle,
-        coupon_code: registerData.requested_coupon ? registerData.requested_coupon.toUpperCase() : '',
-        status: 'pending',
-        commission_type: 'percentage',
-        commission_value: 10,
-        total_clicks: 0,
-        total_orders: 0,
-        total_earnings: 0,
-        pending_earnings: 0,
-        paid_earnings: 0
-      });
-      
-      // Notify admin
-      await base44.integrations.Core.SendEmail({
-        to: "noorherbs2025@gmail.com",
-        subject: "New Affiliate Registration - Noor Herbs",
-        body: `New affiliate registration:\n\nName: ${registerData.name}\nEmail: ${registerData.email}\nPhone: ${registerData.phone}\nYouTube: ${registerData.youtube_channel || 'N/A'}\nInstagram: ${registerData.instagram_handle || 'N/A'}\nRequested Coupon: ${registerData.requested_coupon || 'N/A'}\n\nPlease review and approve in the admin panel.`
-      });
-      
-      toast.success("Registration successful!");
-      setRegisterData({ name: '', email: '', phone: '', password: '', youtube_channel: '', instagram_handle: '', requested_coupon: '' });
-      setRegistrationSuccess(true);
-    } catch (error) {
-      console.error("Registration error:", error);
-      toast.error("Registration failed. Please try again.");
+    const existing = await base44.entities.Affiliate.filter({ email: registerData.email.toLowerCase() });
+    if (existing.length > 0) {
+      toast.error("Email already registered.");
+      setIsLoading(false);
+      return;
     }
     
+    const affiliateId = 'AFF' + Date.now().toString().slice(-6) + Math.random().toString(36).substr(2, 4).toUpperCase();
+    
+    await base44.entities.Affiliate.create({
+      name: registerData.name,
+      email: registerData.email.toLowerCase(),
+      phone: registerData.phone,
+      password: registerData.password,
+      affiliate_id: affiliateId,
+      youtube_channel: registerData.youtube_channel,
+      instagram_handle: registerData.instagram_handle,
+      coupon_code: registerData.requested_coupon ? registerData.requested_coupon.toUpperCase() : '',
+      status: 'pending',
+      commission_type: 'percentage',
+      commission_value: 10,
+      coupon_discount_percent: 10,
+      total_clicks: 0,
+      total_orders: 0,
+      total_earnings: 0,
+      pending_earnings: 0,
+      paid_earnings: 0
+    });
+    
+    await base44.integrations.Core.SendEmail({
+      to: "noorherbs2025@gmail.com",
+      subject: "New Affiliate Registration - Noor Herbs",
+      body: `New affiliate registration:\n\nName: ${registerData.name}\nEmail: ${registerData.email}\nPhone: ${registerData.phone}\nYouTube: ${registerData.youtube_channel || 'N/A'}\nInstagram: ${registerData.instagram_handle || 'N/A'}\nRequested Coupon: ${registerData.requested_coupon || 'N/A'}`
+    });
+    
+    toast.success("Registration successful!");
+    setRegisterData({ name: '', email: '', phone: '', password: '', youtube_channel: '', instagram_handle: '', requested_coupon: '' });
+    setRegistrationSuccess(true);
     setIsLoading(false);
   };
 
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    toast.success("Copied to clipboard!");
+  };
+
+  const getAffiliateLink = (page = '') => {
+    const baseUrl = window.location.origin;
+    return `${baseUrl}${page}?aff_id=${affiliateData?.affiliate_id}`;
+  };
+
+  // Admin functions
+  const handleApprove = async (affiliate) => {
+    await base44.entities.Affiliate.update(affiliate.id, { status: 'approved' });
+    await base44.integrations.Core.SendEmail({
+      to: affiliate.email,
+      subject: "Affiliate Account Approved - Noor Herbs",
+      body: `Dear ${affiliate.name},\n\nYour affiliate account has been approved!\n\nYour Affiliate ID: ${affiliate.affiliate_id}\n${affiliate.coupon_code ? `Your Coupon Code: ${affiliate.coupon_code}` : ''}\n\nLogin at: ${window.location.href}\n\nBest regards,\nNoor Herbs Team`
+    });
+    toast.success("Affiliate approved!");
+    refetchAllAffiliates();
+  };
+
+  const handleDisable = async (affiliate) => {
+    await base44.entities.Affiliate.update(affiliate.id, { status: 'disabled' });
+    toast.success("Affiliate disabled");
+    refetchAllAffiliates();
+  };
+
+  const handleEditAffiliate = (affiliate) => {
+    setEditingAffiliate(affiliate);
+    setEditData({
+      commission_type: affiliate.commission_type || 'percentage',
+      commission_value: affiliate.commission_value || 10,
+      coupon_code: affiliate.coupon_code || '',
+      coupon_discount_percent: affiliate.coupon_discount_percent || 10
+    });
+  };
+
+  const saveAffiliateEdit = async () => {
+    await base44.entities.Affiliate.update(editingAffiliate.id, editData);
+    toast.success("Affiliate updated!");
+    setEditingAffiliate(null);
+    refetchAllAffiliates();
+  };
+
+  const markConversionPaid = async (conversion) => {
+    await base44.entities.AffiliateConversion.update(conversion.id, { status: 'paid' });
+    const affiliate = allAffiliates.find(a => a.affiliate_id === conversion.affiliate_id);
+    if (affiliate) {
+      await base44.entities.Affiliate.update(affiliate.id, {
+        pending_earnings: Math.max(0, (affiliate.pending_earnings || 0) - conversion.commission_amount),
+        paid_earnings: (affiliate.paid_earnings || 0) + conversion.commission_amount
+      });
+    }
+    toast.success("Marked as paid!");
+    refetchAllAffiliates();
+  };
+
+  // ADMIN DASHBOARD
+  if (isAdmin) {
+    const pendingAffiliates = allAffiliates.filter(a => a.status === 'pending');
+    const approvedAffiliates = allAffiliates.filter(a => a.status === 'approved');
+    const totalEarnings = allAffiliates.reduce((sum, a) => sum + (a.total_earnings || 0), 0);
+    const totalClicks = allAffiliates.reduce((sum, a) => sum + (a.total_clicks || 0), 0);
+
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">Admin - Affiliate Management</h1>
+            <Button variant="outline" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" /> Logout
+            </Button>
+          </div>
+
+          {/* Stats */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <Card>
+              <CardContent className="p-6 flex items-center gap-4">
+                <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Total Affiliates</p>
+                  <p className="text-2xl font-bold">{allAffiliates.length}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6 flex items-center gap-4">
+                <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
+                  <MousePointer className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Total Clicks</p>
+                  <p className="text-2xl font-bold">{totalClicks}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6 flex items-center gap-4">
+                <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center">
+                  <ShoppingCart className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Total Conversions</p>
+                  <p className="text-2xl font-bold">{allConversions.length}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6 flex items-center gap-4">
+                <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
+                  <DollarSign className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Total Commissions</p>
+                  <p className="text-2xl font-bold">₹{totalEarnings}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Tabs defaultValue="pending">
+            <TabsList>
+              <TabsTrigger value="pending">Pending ({pendingAffiliates.length})</TabsTrigger>
+              <TabsTrigger value="approved">Approved ({approvedAffiliates.length})</TabsTrigger>
+              <TabsTrigger value="conversions">Conversions ({allConversions.length})</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="pending" className="mt-6 space-y-4">
+              {pendingAffiliates.length === 0 ? (
+                <Card><CardContent className="py-12 text-center text-gray-500">No pending affiliates</CardContent></Card>
+              ) : pendingAffiliates.map(affiliate => (
+                <Card key={affiliate.id}>
+                  <CardContent className="p-6 flex flex-col md:flex-row justify-between gap-4">
+                    <div>
+                      <h3 className="font-bold text-lg">{affiliate.name}</h3>
+                      <p className="text-gray-500">{affiliate.email} | {affiliate.phone}</p>
+                      {affiliate.coupon_code && <Badge className="mt-2">{affiliate.coupon_code}</Badge>}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button onClick={() => handleApprove(affiliate)} className="bg-green-500 hover:bg-green-600">
+                        <CheckCircle className="w-4 h-4 mr-2" /> Approve
+                      </Button>
+                      <Button variant="destructive" onClick={() => handleDisable(affiliate)}>
+                        <XCircle className="w-4 h-4 mr-2" /> Reject
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </TabsContent>
+
+            <TabsContent value="approved" className="mt-6">
+              <div className="overflow-x-auto bg-white rounded-xl">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-4 px-4">Affiliate</th>
+                      <th className="text-left py-4 px-4">ID / Coupon</th>
+                      <th className="text-left py-4 px-4">Commission</th>
+                      <th className="text-left py-4 px-4">Stats</th>
+                      <th className="text-left py-4 px-4">Earnings</th>
+                      <th className="text-left py-4 px-4">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {approvedAffiliates.map(affiliate => (
+                      <tr key={affiliate.id} className="border-b last:border-0">
+                        <td className="py-4 px-4">
+                          <p className="font-medium">{affiliate.name}</p>
+                          <p className="text-sm text-gray-500">{affiliate.email}</p>
+                        </td>
+                        <td className="py-4 px-4">
+                          <p className="font-mono text-sm">{affiliate.affiliate_id}</p>
+                          {affiliate.coupon_code && <Badge variant="secondary">{affiliate.coupon_code}</Badge>}
+                        </td>
+                        <td className="py-4 px-4">
+                          {affiliate.commission_type === 'fixed' ? `₹${affiliate.commission_value}` : `${affiliate.commission_value}%`}
+                        </td>
+                        <td className="py-4 px-4">
+                          <p className="text-sm">Clicks: {affiliate.total_clicks || 0}</p>
+                          <p className="text-sm">Orders: {affiliate.total_orders || 0}</p>
+                        </td>
+                        <td className="py-4 px-4">
+                          <p className="text-sm text-green-600">Paid: ₹{affiliate.paid_earnings || 0}</p>
+                          <p className="text-sm text-orange-600">Pending: ₹{affiliate.pending_earnings || 0}</p>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" onClick={() => handleEditAffiliate(affiliate)}>
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button size="sm" variant="destructive" onClick={() => handleDisable(affiliate)}>
+                              <XCircle className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="conversions" className="mt-6">
+              <div className="overflow-x-auto bg-white rounded-xl">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-4 px-4">Order</th>
+                      <th className="text-left py-4 px-4">Affiliate</th>
+                      <th className="text-left py-4 px-4">Source</th>
+                      <th className="text-left py-4 px-4">Total</th>
+                      <th className="text-left py-4 px-4">Commission</th>
+                      <th className="text-left py-4 px-4">Status</th>
+                      <th className="text-left py-4 px-4">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allConversions.map(conversion => (
+                      <tr key={conversion.id} className="border-b last:border-0">
+                        <td className="py-4 px-4">{conversion.order_number}</td>
+                        <td className="py-4 px-4 font-mono text-sm">{conversion.affiliate_id}</td>
+                        <td className="py-4 px-4">
+                          <Badge variant={conversion.source === 'coupon' ? 'secondary' : 'outline'}>
+                            {conversion.source === 'coupon' ? conversion.coupon_code_used : 'Link'}
+                          </Badge>
+                        </td>
+                        <td className="py-4 px-4">₹{conversion.order_total}</td>
+                        <td className="py-4 px-4 text-green-600">₹{conversion.commission_amount}</td>
+                        <td className="py-4 px-4">
+                          <Badge className={conversion.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}>
+                            {conversion.status}
+                          </Badge>
+                        </td>
+                        <td className="py-4 px-4">
+                          {conversion.status !== 'paid' && (
+                            <Button size="sm" onClick={() => markConversionPaid(conversion)}>Mark Paid</Button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          {/* Edit Dialog */}
+          <Dialog open={!!editingAffiliate} onOpenChange={() => setEditingAffiliate(null)}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit Affiliate - {editingAffiliate?.name}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div>
+                  <Label>Commission Type</Label>
+                  <Select value={editData.commission_type} onValueChange={(v) => setEditData({...editData, commission_type: v})}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="percentage">Percentage</SelectItem>
+                      <SelectItem value="fixed">Fixed Amount</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Commission Value ({editData.commission_type === 'fixed' ? '₹' : '%'})</Label>
+                  <Input type="number" value={editData.commission_value} onChange={(e) => setEditData({...editData, commission_value: Number(e.target.value)})} />
+                </div>
+                <div>
+                  <Label>Coupon Code</Label>
+                  <Input value={editData.coupon_code} onChange={(e) => setEditData({...editData, coupon_code: e.target.value.toUpperCase()})} />
+                </div>
+                <div>
+                  <Label>Coupon Discount %</Label>
+                  <Input type="number" value={editData.coupon_discount_percent} onChange={(e) => setEditData({...editData, coupon_discount_percent: Number(e.target.value)})} />
+                </div>
+                <Button onClick={saveAffiliateEdit} className="w-full bg-orange-500 hover:bg-orange-600">Save Changes</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+    );
+  }
+
+  // AFFILIATE DASHBOARD (after login)
+  if (loggedInAffiliate && affiliateData) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 px-4">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Welcome, {affiliateData.name}!</h1>
+              <p className="text-gray-500">Affiliate ID: {affiliateData.affiliate_id}</p>
+            </div>
+            <Button variant="outline" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" /> Logout
+            </Button>
+          </div>
+
+          {/* Stats */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <Card>
+              <CardContent className="p-6 text-center">
+                <MousePointer className="w-8 h-8 mx-auto mb-2 text-blue-500" />
+                <p className="text-2xl font-bold">{affiliateData.total_clicks || 0}</p>
+                <p className="text-sm text-gray-500">Total Clicks</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6 text-center">
+                <ShoppingCart className="w-8 h-8 mx-auto mb-2 text-green-500" />
+                <p className="text-2xl font-bold">{affiliateData.total_orders || 0}</p>
+                <p className="text-sm text-gray-500">Total Orders</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6 text-center">
+                <DollarSign className="w-8 h-8 mx-auto mb-2 text-orange-500" />
+                <p className="text-2xl font-bold">₹{affiliateData.pending_earnings || 0}</p>
+                <p className="text-sm text-gray-500">Pending Earnings</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6 text-center">
+                <TrendingUp className="w-8 h-8 mx-auto mb-2 text-purple-500" />
+                <p className="text-2xl font-bold">₹{affiliateData.paid_earnings || 0}</p>
+                <p className="text-sm text-gray-500">Paid Earnings</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Links & Coupon */}
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Link2 className="w-5 h-5" /> Your Affiliate Links</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex gap-2">
+                  <Input value={getAffiliateLink('')} readOnly className="text-sm" />
+                  <Button size="icon" variant="outline" onClick={() => copyToClipboard(getAffiliateLink(''))}>
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+                <div className="flex gap-2">
+                  <Input value={getAffiliateLink('/Shop')} readOnly className="text-sm" />
+                  <Button size="icon" variant="outline" onClick={() => copyToClipboard(getAffiliateLink('/Shop'))}>
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Your Coupon Code</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {affiliateData.coupon_code ? (
+                  <div className="text-center">
+                    <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-6 py-3 rounded-xl">
+                      <span className="text-2xl font-bold">{affiliateData.coupon_code}</span>
+                      <Button size="icon" variant="ghost" onClick={() => copyToClipboard(affiliateData.coupon_code)}>
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-2">{affiliateData.coupon_discount_percent}% discount for customers</p>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center">No coupon code assigned yet</p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Commission Info */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Commission Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                <span>Your Commission Rate:</span>
+                <span className="text-xl font-bold text-orange-600">
+                  {affiliateData.commission_type === 'fixed' ? `₹${affiliateData.commission_value}` : `${affiliateData.commission_value}%`} per sale
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recent Conversions */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Conversions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {myConversions.length === 0 ? (
+                <p className="text-center text-gray-500 py-8">No conversions yet. Share your links to start earning!</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-2">Order</th>
+                        <th className="text-left py-3 px-2">Source</th>
+                        <th className="text-left py-3 px-2">Total</th>
+                        <th className="text-left py-3 px-2">Commission</th>
+                        <th className="text-left py-3 px-2">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {myConversions.slice(0, 10).map(conv => (
+                        <tr key={conv.id} className="border-b last:border-0">
+                          <td className="py-3 px-2">{conv.order_number}</td>
+                          <td className="py-3 px-2">
+                            <Badge variant={conv.source === 'coupon' ? 'secondary' : 'outline'}>
+                              {conv.source === 'coupon' ? conv.coupon_code_used : 'Link'}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-2">₹{conv.order_total}</td>
+                          <td className="py-3 px-2 text-green-600">₹{conv.commission_amount}</td>
+                          <td className="py-3 px-2">
+                            <Badge className={conv.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}>
+                              {conv.status}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // LOGIN / REGISTER PAGE
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 py-12 px-4">
       <div className="max-w-md mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Affiliate Program</h1>
           <p className="text-gray-600">Earn commission by promoting Noor Herbs products</p>
         </motion.div>
@@ -155,42 +650,23 @@ export default function AffiliateLogin() {
             
             <TabsContent value="login">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <LogIn className="w-5 h-5" />
-                  Affiliate Login
-                </CardTitle>
+                <CardTitle className="flex items-center gap-2"><LogIn className="w-5 h-5" /> Affiliate Login</CardTitle>
                 <CardDescription>Login to your affiliate dashboard</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div>
                     <Label htmlFor="login-email">Email</Label>
-                    <Input
-                      id="login-email"
-                      type="email"
-                      value={loginData.email}
-                      onChange={(e) => setLoginData({...loginData, email: e.target.value})}
-                      required
-                    />
+                    <Input id="login-email" type="email" value={loginData.email} onChange={(e) => setLoginData({...loginData, email: e.target.value})} required />
                   </div>
                   <div>
                     <Label htmlFor="login-password">Password</Label>
-                    <Input
-                      id="login-password"
-                      type="password"
-                      value={loginData.password}
-                      onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                      required
-                    />
+                    <Input id="login-password" type="password" value={loginData.password} onChange={(e) => setLoginData({...loginData, password: e.target.value})} required />
                   </div>
                   <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600" disabled={isLoading}>
                     {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Login"}
                   </Button>
-                  <button 
-                    type="button"
-                    onClick={() => setShowForgotPassword(true)}
-                    className="w-full text-sm text-orange-600 hover:underline mt-3"
-                  >
+                  <button type="button" onClick={() => setShowForgotPassword(true)} className="w-full text-sm text-orange-600 hover:underline mt-3">
                     Forgot Password?
                   </button>
                 </form>
@@ -201,107 +677,45 @@ export default function AffiliateLogin() {
               {registrationSuccess ? (
                 <CardContent className="py-12 text-center">
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
+                    <CheckCircle className="w-8 h-8 text-green-600" />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2">Registration Successful!</h3>
-                  <p className="text-gray-600 mb-4">
-                    Your affiliate account is pending approval. Our team will review your application and notify you via email once approved.
-                  </p>
-                  <p className="text-sm text-gray-500 mb-6">
-                    This usually takes 24-48 hours.
-                  </p>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setRegistrationSuccess(false)}
-                  >
-                    Register Another Account
-                  </Button>
+                  <p className="text-gray-600 mb-4">Your account is pending approval. We'll notify you via email.</p>
+                  <Button variant="outline" onClick={() => setRegistrationSuccess(false)}>Register Another</Button>
                 </CardContent>
               ) : (
-              <>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <UserPlus className="w-5 h-5" />
-                  Become an Affiliate
-                </CardTitle>
-                <CardDescription>Join our affiliate program and start earning</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleRegister} className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Full Name *</Label>
-                    <Input
-                      id="name"
-                      value={registerData.name}
-                      onChange={(e) => setRegisterData({...registerData, name: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={registerData.email}
-                      onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone">Phone *</Label>
-                    <Input
-                      id="phone"
-                      value={registerData.phone}
-                      onChange={(e) => setRegisterData({...registerData, phone: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="password">Password *</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={registerData.password}
-                      onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="youtube">YouTube Channel (optional)</Label>
-                    <Input
-                      id="youtube"
-                      placeholder="https://youtube.com/@yourchannel"
-                      value={registerData.youtube_channel}
-                      onChange={(e) => setRegisterData({...registerData, youtube_channel: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="instagram">Instagram Handle (optional)</Label>
-                    <Input
-                      id="instagram"
-                      placeholder="@yourhandle"
-                      value={registerData.instagram_handle}
-                      onChange={(e) => setRegisterData({...registerData, instagram_handle: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="coupon">Requested Coupon Code (optional)</Label>
-                    <Input
-                      id="coupon"
-                      placeholder="e.g. SIMRAN10"
-                      value={registerData.requested_coupon}
-                      onChange={(e) => setRegisterData({...registerData, requested_coupon: e.target.value.toUpperCase()})}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Subject to admin approval</p>
-                  </div>
-                  <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600" disabled={isLoading}>
-                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Register"}
-                  </Button>
-                </form>
-              </CardContent>
-              </>
+                <>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><UserPlus className="w-5 h-5" /> Become an Affiliate</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleRegister} className="space-y-4">
+                      <div>
+                        <Label>Full Name *</Label>
+                        <Input value={registerData.name} onChange={(e) => setRegisterData({...registerData, name: e.target.value})} required />
+                      </div>
+                      <div>
+                        <Label>Email *</Label>
+                        <Input type="email" value={registerData.email} onChange={(e) => setRegisterData({...registerData, email: e.target.value})} required />
+                      </div>
+                      <div>
+                        <Label>Phone *</Label>
+                        <Input value={registerData.phone} onChange={(e) => setRegisterData({...registerData, phone: e.target.value})} required />
+                      </div>
+                      <div>
+                        <Label>Password *</Label>
+                        <Input type="password" value={registerData.password} onChange={(e) => setRegisterData({...registerData, password: e.target.value})} required />
+                      </div>
+                      <div>
+                        <Label>Requested Coupon Code (optional)</Label>
+                        <Input placeholder="e.g. SIMRAN10" value={registerData.requested_coupon} onChange={(e) => setRegisterData({...registerData, requested_coupon: e.target.value.toUpperCase()})} />
+                      </div>
+                      <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600" disabled={isLoading}>
+                        {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Register"}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </>
               )}
             </TabsContent>
           </Tabs>
@@ -312,65 +726,34 @@ export default function AffiliateLogin() {
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <Card className="w-full max-w-md">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <KeyRound className="w-5 h-5" />
-                  Forgot Password
-                </CardTitle>
-                <CardDescription>Enter your email to receive password recovery instructions</CardDescription>
+                <CardTitle className="flex items-center gap-2"><KeyRound className="w-5 h-5" /> Forgot Password</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="forgot-email">Email</Label>
-                    <Input
-                      id="forgot-email"
-                      type="email"
-                      value={forgotEmail}
-                      onChange={(e) => setForgotEmail(e.target.value)}
-                      placeholder="Enter your registered email"
-                    />
+                    <Label>Email</Label>
+                    <Input type="email" value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} placeholder="Enter your registered email" />
                   </div>
                   <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      className="flex-1"
-                      onClick={() => {
+                    <Button variant="outline" className="flex-1" onClick={() => { setShowForgotPassword(false); setForgotEmail(''); }}>Cancel</Button>
+                    <Button className="flex-1 bg-orange-500 hover:bg-orange-600" disabled={isLoading} onClick={async () => {
+                      if (!forgotEmail.trim()) { toast.error("Please enter your email"); return; }
+                      setIsLoading(true);
+                      const affiliates = await base44.entities.Affiliate.filter({ email: forgotEmail.toLowerCase() });
+                      if (affiliates.length === 0) {
+                        toast.error("Email not found");
+                      } else {
+                        await base44.integrations.Core.SendEmail({
+                          to: "noorherbs2025@gmail.com",
+                          subject: "Affiliate Password Recovery Request",
+                          body: `Password recovery for:\n\nName: ${affiliates[0].name}\nEmail: ${affiliates[0].email}\nPassword: ${affiliates[0].password}`
+                        });
+                        toast.success("Recovery request sent!");
                         setShowForgotPassword(false);
                         setForgotEmail('');
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button 
-                      className="flex-1 bg-orange-500 hover:bg-orange-600"
-                      disabled={isLoading}
-                      onClick={async () => {
-                        if (!forgotEmail.trim()) {
-                          toast.error("Please enter your email");
-                          return;
-                        }
-                        setIsLoading(true);
-                        try {
-                          const affiliates = await base44.entities.Affiliate.filter({ email: forgotEmail.toLowerCase() });
-                          if (affiliates.length === 0) {
-                            toast.error("Email not found in our system");
-                          } else {
-                            const affiliate = affiliates[0];
-                            await base44.integrations.Core.SendEmail({
-                              to: "noorherbs2025@gmail.com",
-                              subject: "Affiliate Password Recovery Request",
-                              body: `Password recovery requested for:\n\nName: ${affiliate.name}\nEmail: ${affiliate.email}\nAffiliate ID: ${affiliate.affiliate_id}\nCurrent Password: ${affiliate.password}\n\nPlease contact the affiliate to provide their password or reset it.`
-                            });
-                            toast.success("Recovery request sent! Our team will contact you shortly.");
-                            setShowForgotPassword(false);
-                            setForgotEmail('');
-                          }
-                        } catch (error) {
-                          toast.error("Failed to send recovery request");
-                        }
-                        setIsLoading(false);
-                      }}
-                    >
+                      }
+                      setIsLoading(false);
+                    }}>
                       {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit"}
                     </Button>
                   </div>
@@ -383,26 +766,10 @@ export default function AffiliateLogin() {
         <div className="mt-8 bg-white rounded-2xl p-6">
           <h3 className="font-bold text-gray-900 mb-4">Why Join Our Affiliate Program?</h3>
           <ul className="space-y-3 text-gray-600">
-            <li className="flex items-start gap-2">
-              <span className="text-orange-500">✓</span>
-              Earn up to 10% commission on every sale
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-orange-500">✓</span>
-              30-day cookie duration for tracking
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-orange-500">✓</span>
-              Get your own custom coupon code
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-orange-500">✓</span>
-              Real-time tracking dashboard
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-orange-500">✓</span>
-              Monthly payouts via bank transfer
-            </li>
+            <li className="flex items-start gap-2"><span className="text-orange-500">✓</span> Earn up to 10% commission</li>
+            <li className="flex items-start gap-2"><span className="text-orange-500">✓</span> 30-day cookie tracking</li>
+            <li className="flex items-start gap-2"><span className="text-orange-500">✓</span> Custom coupon code</li>
+            <li className="flex items-start gap-2"><span className="text-orange-500">✓</span> Real-time dashboard</li>
           </ul>
         </div>
       </div>
