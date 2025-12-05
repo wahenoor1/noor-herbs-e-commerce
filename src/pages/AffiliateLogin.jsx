@@ -131,6 +131,12 @@ export default function AffiliateLogin() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    
+    if (!loginData.email.trim() || !loginData.password.trim()) {
+      toast.error("Please enter email and password");
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
@@ -138,37 +144,36 @@ export default function AffiliateLogin() {
       if (loginData.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && loginData.password === ADMIN_PASSWORD) {
         localStorage.setItem('noorherbs_affiliate_session', JSON.stringify({ isAdmin: true }));
         setIsAdmin(true);
+        setIsLoading(false);
         toast.success("Admin login successful!");
-        setIsLoading(false);
         return;
       }
       
-      // Regular affiliate login
-      const affiliates = await base44.entities.Affiliate.filter({ email: loginData.email.toLowerCase() });
+      // Regular affiliate login - fetch all and find by email
+      const allAffiliates = await base44.entities.Affiliate.list();
+      const affiliate = allAffiliates.find(a => a.email?.toLowerCase() === loginData.email.toLowerCase());
       
-      if (affiliates.length === 0) {
+      if (!affiliate) {
+        setIsLoading(false);
         toast.error("Account not found. Please register first.");
-        setIsLoading(false);
         return;
       }
-      
-      const affiliate = affiliates[0];
       
       if (affiliate.password !== loginData.password) {
-        toast.error("Invalid password");
         setIsLoading(false);
+        toast.error("Invalid password");
         return;
       }
       
       if (affiliate.status === 'pending') {
-        toast.error("Your account is pending approval.");
         setIsLoading(false);
+        toast.error("Your account is pending approval. Please wait for admin approval.");
         return;
       }
       
       if (affiliate.status === 'disabled') {
-        toast.error("Your account has been disabled.");
         setIsLoading(false);
+        toast.error("Your account has been disabled. Contact support.");
         return;
       }
       
@@ -180,12 +185,13 @@ export default function AffiliateLogin() {
       };
       localStorage.setItem('noorherbs_affiliate_session', JSON.stringify(session));
       setLoggedInAffiliate(session);
+      setIsLoading(false);
       toast.success("Login successful!");
     } catch (error) {
       console.error("Login error:", error);
+      setIsLoading(false);
       toast.error("Login failed. Please try again.");
     }
-    setIsLoading(false);
   };
 
   const handleLogout = () => {
@@ -197,20 +203,33 @@ export default function AffiliateLogin() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    
+    // Validation
+    if (!registerData.name.trim() || !registerData.email.trim() || !registerData.phone.trim() || !registerData.password.trim()) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+    
+    if (registerData.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
       // Check if email already exists
-      const existingEmail = await base44.entities.Affiliate.filter({ email: registerData.email.toLowerCase() });
-      if (existingEmail.length > 0) {
+      const allAffiliates = await base44.entities.Affiliate.list();
+      const existingEmail = allAffiliates.find(a => a.email?.toLowerCase() === registerData.email.toLowerCase());
+      if (existingEmail) {
         toast.error("This email is already registered. Please use a different email or login.");
         setIsLoading(false);
         return;
       }
       
       // Check if phone already exists
-      const existingPhone = await base44.entities.Affiliate.filter({ phone: registerData.phone });
-      if (existingPhone.length > 0) {
+      const existingPhone = allAffiliates.find(a => a.phone === registerData.phone);
+      if (existingPhone) {
         toast.error("This phone number is already registered. Please use a different phone number.");
         setIsLoading(false);
         return;
@@ -238,23 +257,16 @@ export default function AffiliateLogin() {
         paid_earnings: 0
       });
       
-      // Send email to admin about new registration
-      await base44.integrations.Core.SendEmail({
+      // Send email to admin - don't await to prevent blocking
+      base44.integrations.Core.SendEmail({
         to: "noorherbs2025@gmail.com",
         subject: "New Affiliate Registration - Noor Herbs",
-        body: `New affiliate registration:\n\nName: ${registerData.name}\nEmail: ${registerData.email}\nPhone: ${registerData.phone}\nYouTube: ${registerData.youtube_channel || 'N/A'}\nInstagram: ${registerData.instagram_handle || 'N/A'}\nRequested Coupon: ${registerData.requested_coupon || 'N/A'}\n\nPlease login to admin panel to approve or reject this affiliate.`
-      });
+        body: `New affiliate registration:\n\nName: ${registerData.name}\nEmail: ${registerData.email}\nPhone: ${registerData.phone}\nYouTube: ${registerData.youtube_channel || 'N/A'}\nInstagram: ${registerData.instagram_handle || 'N/A'}\nRequested Coupon: ${registerData.requested_coupon || 'N/A'}`
+      }).catch(() => {});
       
-      // Send confirmation email to the affiliate
-      await base44.integrations.Core.SendEmail({
-        to: registerData.email,
-        subject: "Registration Received - Noor Herbs Affiliate Program",
-        body: `Dear ${registerData.name},\n\nThank you for registering for the Noor Herbs Affiliate Program!\n\nYour application has been received and is pending approval by our team. We will review your application and notify you via email once your account is approved.\n\nThis usually takes 24-48 hours.\n\nBest regards,\nNoor Herbs Team`
-      });
-      
-      toast.success("Registration successful!");
-      setRegisterData({ name: '', email: '', phone: '', password: '', youtube_channel: '', instagram_handle: '', requested_coupon: '' });
       setRegistrationSuccess(true);
+      setRegisterData({ name: '', email: '', phone: '', password: '', youtube_channel: '', instagram_handle: '', requested_coupon: '' });
+      toast.success("Registration successful! Your account is pending approval.");
     } catch (error) {
       console.error("Registration error:", error);
       toast.error("Registration failed. Please try again.");
