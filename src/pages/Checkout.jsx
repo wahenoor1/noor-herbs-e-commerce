@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { getAffiliateFromCookie, getAffiliateFromCoupon, calculateCommission } from "@/components/affiliate/AffiliateTracker";
 
 export default function Checkout() {
+  const location = useLocation();
   const [cartItems, setCartItems] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [couponCode, setCouponCode] = useState('');
@@ -42,21 +43,40 @@ export default function Checkout() {
   useEffect(() => {
     const cart = JSON.parse(localStorage.getItem('noorherbs_cart') || '[]');
     setCartItems(cart);
-  }, []);
+    
+    // Check if coupon was applied from Cart page
+    const urlParams = new URLSearchParams(location.search);
+    const appliedCouponData = urlParams.get('coupon');
+    if (appliedCouponData) {
+      try {
+        const couponInfo = JSON.parse(decodeURIComponent(appliedCouponData));
+        setAppliedCoupon(couponInfo.affiliate);
+        setCouponDiscount(couponInfo.discount);
+        setCouponCode(couponInfo.affiliate.coupon_code);
+      } catch (e) {
+        console.error('Error parsing coupon data:', e);
+      }
+    }
+  }, [location]);
 
   const applyCoupon = async () => {
     if (!couponCode.trim()) return;
     setIsApplyingCoupon(true);
     
-    const affiliate = await getAffiliateFromCoupon(couponCode.trim());
-    if (affiliate) {
-      setAppliedCoupon(affiliate);
-      const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      const discount = (subtotal * (affiliate.coupon_discount_percent || 10)) / 100;
-      setCouponDiscount(discount);
-      toast.success(`Coupon applied! ${affiliate.coupon_discount_percent}% discount`);
-    } else {
-      toast.error("Invalid coupon code");
+    try {
+      const affiliate = await getAffiliateFromCoupon(couponCode.trim());
+      if (affiliate) {
+        setAppliedCoupon(affiliate);
+        const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const discount = (subtotal * (affiliate.coupon_discount_percent || 10)) / 100;
+        setCouponDiscount(discount);
+        toast.success(`Coupon applied! ${affiliate.coupon_discount_percent}% discount`);
+      } else {
+        toast.error("Invalid coupon code");
+      }
+    } catch (error) {
+      console.error("Coupon error:", error);
+      toast.error("Failed to apply coupon");
     }
     setIsApplyingCoupon(false);
   };
@@ -118,10 +138,9 @@ export default function Checkout() {
 
       // Track affiliate conversion
       let affiliateSource = null;
-      let trackingAffiliate = appliedCoupon; // Coupon affiliate takes priority
+      let trackingAffiliate = appliedCoupon;
       
       if (!trackingAffiliate) {
-        // Check for cookie-based affiliate
         const affIdFromCookie = getAffiliateFromCookie();
         if (affIdFromCookie) {
           const affiliates = await base44.entities.Affiliate.filter({ affiliate_id: affIdFromCookie, status: 'approved' });
@@ -134,7 +153,6 @@ export default function Checkout() {
         affiliateSource = 'coupon';
       }
 
-      // Record affiliate conversion
       if (trackingAffiliate) {
         const commission = calculateCommission(trackingAffiliate, finalTotal);
         
@@ -149,7 +167,6 @@ export default function Checkout() {
           coupon_code_used: affiliateSource === 'coupon' ? trackingAffiliate.coupon_code : ''
         });
 
-        // Update affiliate stats
         await base44.entities.Affiliate.update(trackingAffiliate.id, {
           total_orders: (trackingAffiliate.total_orders || 0) + 1,
           total_earnings: (trackingAffiliate.total_earnings || 0) + commission,
@@ -157,40 +174,35 @@ export default function Checkout() {
         });
       }
 
-      // Prepare email content
       const itemsList = cartItems.map(item => `${item.product_name} x ${item.quantity} - ₹${item.price * item.quantity}`).join('\n');
       
-      // Send email to store admin
-      await base44.integrations.Core.SendEmail({
+      // Send emails - don't await to avoid blocking
+      base44.integrations.Core.SendEmail({
         to: "noorherbs2025@gmail.com",
         subject: `🎉 New Order Received - ${orderNumber}`,
         body: `New order received!\n\nOrder Number: ${orderNumber}\n\nCustomer Details:\nName: ${formData.customer_name}\nPhone: ${formData.customer_phone}\nEmail: ${formData.customer_email || 'Not provided'}\n\nShipping Address:\n${formData.shipping_address}\n${formData.city}, ${formData.state}\nPincode: ${formData.pincode}\n\nOrder Items:\n${itemsList}\n\nSubtotal: ₹${subtotal}${couponDiscount > 0 ? `\nCoupon Discount: -₹${couponDiscount}` : ''}\nShipping: ${shipping === 0 ? 'Free' : '₹' + shipping}\nTotal: ₹${finalTotal}\n\nPayment Method: ${formData.payment_method === 'cod' ? 'Cash on Delivery' : 'Online Payment'}${trackingAffiliate ? `\n\nAffiliate: ${trackingAffiliate.name} (${trackingAffiliate.affiliate_id})` : ''}`
-      });
+      }).catch(() => {});
 
-      // Send confirmation email to customer if email provided
       if (formData.customer_email && formData.customer_email.trim()) {
-        await base44.integrations.Core.SendEmail({
+        base44.integrations.Core.SendEmail({
           to: formData.customer_email,
           subject: `Order Confirmation - ${orderNumber} - Noor Herbs`,
           body: `Dear ${formData.customer_name},\n\nThank you for your order!\n\nOrder Number: ${orderNumber}\n\nOrder Summary:\n${itemsList}\n\nSubtotal: ₹${subtotal}${couponDiscount > 0 ? `\nDiscount: -₹${couponDiscount}` : ''}\nShipping: ${shipping === 0 ? 'Free' : '₹' + shipping}\nTotal Amount: ₹${finalTotal}\n\nShipping Address:\n${formData.shipping_address}\n${formData.city}, ${formData.state}\nPincode: ${formData.pincode}\n\nPayment Method: ${formData.payment_method === 'cod' ? 'Cash on Delivery' : 'Online Payment'}\n\nWe will process your order shortly and send you tracking details once shipped.\n\nFor any queries, contact us at:\nPhone: +91-XXXXXXXXXX\nEmail: noorherbs2025@gmail.com\n\nThank you for choosing Noor Herbs!\n\nBest regards,\nNoor Herbs Team`
-        });
+        }).catch(() => {});
       }
 
-      // Clear cart
       localStorage.setItem('noorherbs_cart', JSON.stringify([]));
       window.dispatchEvent(new Event('cartUpdated'));
 
-      // Show success message
       toast.success("🎉 Order placed successfully!");
       
-      // Redirect to confirmation page
       setTimeout(() => {
         window.location.href = createPageUrl(`OrderConfirmation?order=${orderNumber}`);
-      }, 1000);
+      }, 800);
       
     } catch (error) {
       console.error("Order creation error:", error);
-      toast.error("Failed to place order. Please try again or contact support.");
+      toast.error(`Order failed: ${error.message || 'Please try again'}`);
       setIsSubmitting(false);
     }
   };
@@ -227,9 +239,7 @@ export default function Checkout() {
 
         <form onSubmit={handleSubmit}>
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Shipping Form */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Contact Info */}
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -274,7 +284,6 @@ export default function Checkout() {
                 </div>
               </motion.div>
 
-              {/* Shipping Address */}
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -332,7 +341,6 @@ export default function Checkout() {
                 </div>
               </motion.div>
 
-              {/* Payment Method */}
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -368,12 +376,10 @@ export default function Checkout() {
               </motion.div>
             </div>
 
-            {/* Order Summary */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-2xl p-6 sticky top-24">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
 
-                {/* Coupon Code */}
                 <div className="mb-6">
                   {!appliedCoupon ? (
                     <div className="flex gap-2">
@@ -411,7 +417,6 @@ export default function Checkout() {
                   )}
                 </div>
 
-                {/* Items */}
                 <div className="space-y-4 mb-6">
                   {cartItems.map((item) => (
                     <div key={item.product_id} className="flex gap-3">
@@ -439,7 +444,7 @@ export default function Checkout() {
                   {couponDiscount > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>Coupon Discount</span>
-                      <span>-₹{couponDiscount}</span>
+                      <span>-₹{couponDiscount.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-gray-600">
@@ -449,7 +454,7 @@ export default function Checkout() {
                   <div className="border-t pt-3">
                     <div className="flex justify-between text-lg font-bold text-gray-900">
                       <span>Total</span>
-                      <span>₹{total}</span>
+                      <span>₹{total.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>

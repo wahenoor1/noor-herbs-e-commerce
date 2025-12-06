@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,13 +11,20 @@ import {
   ArrowRight,
   Truck,
   Shield,
-  Tag
+  Tag,
+  Loader2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { getAffiliateFromCoupon } from "@/components/affiliate/AffiliateTracker";
 
 export default function Cart() {
+  const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
 
   useEffect(() => {
     loadCart();
@@ -41,6 +48,13 @@ export default function Cart() {
     localStorage.setItem('noorherbs_cart', JSON.stringify(cart));
     setCartItems(cart);
     window.dispatchEvent(new Event('cartUpdated'));
+    
+    // Recalculate discount if coupon is applied
+    if (appliedCoupon) {
+      const newSubtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const discount = (newSubtotal * (appliedCoupon.coupon_discount_percent || 10)) / 100;
+      setCouponDiscount(discount);
+    }
   };
 
   const removeItem = (index) => {
@@ -50,11 +64,68 @@ export default function Cart() {
     setCartItems(cart);
     window.dispatchEvent(new Event('cartUpdated'));
     toast.success("Item removed from cart");
+    
+    // Recalculate discount if coupon is applied
+    if (appliedCoupon && cart.length > 0) {
+      const newSubtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const discount = (newSubtotal * (appliedCoupon.coupon_discount_percent || 10)) / 100;
+      setCouponDiscount(discount);
+    } else if (cart.length === 0) {
+      setAppliedCoupon(null);
+      setCouponDiscount(0);
+      setCouponCode('');
+    }
+  };
+
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error("Please enter a coupon code");
+      return;
+    }
+    
+    setIsApplyingCoupon(true);
+    
+    try {
+      const affiliate = await getAffiliateFromCoupon(couponCode.trim());
+      if (affiliate) {
+        setAppliedCoupon(affiliate);
+        const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const discount = (subtotal * (affiliate.coupon_discount_percent || 10)) / 100;
+        setCouponDiscount(discount);
+        toast.success(`🎉 Coupon ${affiliate.coupon_code} applied! ${affiliate.coupon_discount_percent}% discount`);
+      } else {
+        toast.error("Invalid coupon code");
+      }
+    } catch (error) {
+      console.error("Coupon error:", error);
+      toast.error("Failed to apply coupon");
+    }
+    
+    setIsApplyingCoupon(false);
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponDiscount(0);
+    setCouponCode('');
+    toast.success("Coupon removed");
+  };
+
+  const handleCheckout = () => {
+    if (appliedCoupon) {
+      const couponData = encodeURIComponent(JSON.stringify({
+        affiliate: appliedCoupon,
+        discount: couponDiscount
+      }));
+      navigate(createPageUrl(`Checkout?coupon=${couponData}`));
+    } else {
+      navigate(createPageUrl("Checkout"));
+    }
   };
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const shipping = subtotal >= 500 ? 0 : 50;
-  const total = subtotal + shipping;
+  const total = subtotal - couponDiscount + shipping;
 
   if (cartItems.length === 0) {
     return (
@@ -93,7 +164,6 @@ export default function Cart() {
                   exit={{ opacity: 0, x: -100 }}
                   className="bg-white rounded-2xl p-4 md:p-6 flex flex-col md:flex-row gap-4"
                 >
-                  {/* Image */}
                   <div className="w-full md:w-32 h-32 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
                     <img 
                       src={item.product_image || "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692d8181feb1ac797ea503b0/b8bd1ca3f_WhatsAppImage2025-11-27at144623.jpg"} 
@@ -102,7 +172,6 @@ export default function Cart() {
                     />
                   </div>
 
-                  {/* Details */}
                   <div className="flex-1">
                     <div className="flex justify-between items-start">
                       <div>
@@ -121,7 +190,6 @@ export default function Cart() {
                       </button>
                     </div>
 
-                    {/* Quantity */}
                     <div className="flex items-center justify-between mt-4">
                       <div className="flex items-center border rounded-full">
                         <button 
@@ -151,12 +219,43 @@ export default function Cart() {
             <div className="bg-white rounded-2xl p-6 sticky top-24">
               <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
 
-              {/* Coupon */}
-              <div className="flex gap-2 mb-6">
-                <Input placeholder="Coupon code" className="rounded-full" />
-                <Button variant="outline" className="rounded-full px-6">
-                  Apply
-                </Button>
+              {/* Coupon Code Section */}
+              <div className="mb-6">
+                {!appliedCoupon ? (
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Input 
+                        placeholder="Enter coupon code" 
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        className="rounded-full"
+                      />
+                      <Button 
+                        variant="outline" 
+                        className="rounded-full px-6"
+                        onClick={applyCoupon}
+                        disabled={isApplyingCoupon}
+                      >
+                        {isApplyingCoupon ? <Loader2 className="w-4 h-4 animate-spin" /> : "Apply"}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500 text-center">Have an affiliate coupon? Apply it here!</p>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between bg-green-50 p-3 rounded-xl">
+                    <div className="flex items-center gap-2 text-green-700">
+                      <Tag className="w-4 h-4" />
+                      <span className="font-medium">{appliedCoupon.coupon_code}</span>
+                      <span className="text-sm">(-{appliedCoupon.coupon_discount_percent}%)</span>
+                    </div>
+                    <button 
+                      onClick={removeCoupon}
+                      className="text-red-500 text-sm hover:underline"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-4 mb-6">
@@ -164,10 +263,19 @@ export default function Cart() {
                   <span>Subtotal</span>
                   <span>₹{subtotal}</span>
                 </div>
+                
+                {couponDiscount > 0 && (
+                  <div className="flex justify-between text-green-600 font-medium">
+                    <span>Coupon Discount</span>
+                    <span>-₹{couponDiscount.toFixed(2)}</span>
+                  </div>
+                )}
+                
                 <div className="flex justify-between text-gray-600">
                   <span>Shipping</span>
                   <span>{shipping === 0 ? 'Free' : `₹${shipping}`}</span>
                 </div>
+                
                 {shipping === 0 && (
                   <div className="flex items-center gap-2 text-green-600 text-sm">
                     <Tag className="w-4 h-4" />
@@ -180,22 +288,23 @@ export default function Cart() {
                     Add ₹{500 - subtotal} more for free shipping
                   </div>
                 )}
+                
                 <div className="border-t pt-4">
                   <div className="flex justify-between text-lg font-bold text-gray-900">
                     <span>Total</span>
-                    <span>₹{total}</span>
+                    <span>₹{total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
 
-              <Link to={createPageUrl("Checkout")}>
-                <Button className="w-full bg-orange-500 hover:bg-orange-600 h-14 rounded-full text-lg">
-                  Proceed to Checkout
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </Link>
+              <Button 
+                className="w-full bg-orange-500 hover:bg-orange-600 h-14 rounded-full text-lg"
+                onClick={handleCheckout}
+              >
+                Proceed to Checkout
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
 
-              {/* Trust Badges */}
               <div className="flex items-center justify-center gap-4 mt-6 text-sm text-gray-500">
                 <div className="flex items-center gap-1">
                   <Shield className="w-4 h-4" />
