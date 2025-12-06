@@ -69,8 +69,26 @@ export default function Checkout() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.customer_name || !formData.customer_phone || !formData.shipping_address || !formData.city || !formData.pincode) {
-      toast.error("Please fill all required fields");
+    
+    // Enhanced validation with specific error messages
+    if (!formData.customer_name.trim()) {
+      toast.error("Please enter your full name");
+      return;
+    }
+    if (!formData.customer_phone.trim()) {
+      toast.error("Please enter your phone number");
+      return;
+    }
+    if (!formData.shipping_address.trim()) {
+      toast.error("Please enter your shipping address");
+      return;
+    }
+    if (!formData.city.trim()) {
+      toast.error("Please enter your city");
+      return;
+    }
+    if (!formData.pincode.trim()) {
+      toast.error("Please enter your pincode");
       return;
     }
 
@@ -82,6 +100,7 @@ export default function Checkout() {
       const finalTotal = subtotal - couponDiscount + shipping;
       const orderNumber = `NH${Date.now().toString().slice(-8)}`;
       
+      // Create order
       const order = await base44.entities.Order.create({
         order_number: orderNumber,
         ...formData,
@@ -138,25 +157,42 @@ export default function Checkout() {
         });
       }
 
-      // Send email notification to admin
+      // Prepare email content
       const itemsList = cartItems.map(item => `${item.product_name} x ${item.quantity} - ₹${item.price * item.quantity}`).join('\n');
+      
+      // Send email to store admin
       await base44.integrations.Core.SendEmail({
         to: "noorherbs2025@gmail.com",
-        subject: `New Order Received - ${orderNumber}`,
+        subject: `🎉 New Order Received - ${orderNumber}`,
         body: `New order received!\n\nOrder Number: ${orderNumber}\n\nCustomer Details:\nName: ${formData.customer_name}\nPhone: ${formData.customer_phone}\nEmail: ${formData.customer_email || 'Not provided'}\n\nShipping Address:\n${formData.shipping_address}\n${formData.city}, ${formData.state}\nPincode: ${formData.pincode}\n\nOrder Items:\n${itemsList}\n\nSubtotal: ₹${subtotal}${couponDiscount > 0 ? `\nCoupon Discount: -₹${couponDiscount}` : ''}\nShipping: ${shipping === 0 ? 'Free' : '₹' + shipping}\nTotal: ₹${finalTotal}\n\nPayment Method: ${formData.payment_method === 'cod' ? 'Cash on Delivery' : 'Online Payment'}${trackingAffiliate ? `\n\nAffiliate: ${trackingAffiliate.name} (${trackingAffiliate.affiliate_id})` : ''}`
       });
+
+      // Send confirmation email to customer if email provided
+      if (formData.customer_email && formData.customer_email.trim()) {
+        await base44.integrations.Core.SendEmail({
+          to: formData.customer_email,
+          subject: `Order Confirmation - ${orderNumber} - Noor Herbs`,
+          body: `Dear ${formData.customer_name},\n\nThank you for your order!\n\nOrder Number: ${orderNumber}\n\nOrder Summary:\n${itemsList}\n\nSubtotal: ₹${subtotal}${couponDiscount > 0 ? `\nDiscount: -₹${couponDiscount}` : ''}\nShipping: ${shipping === 0 ? 'Free' : '₹' + shipping}\nTotal Amount: ₹${finalTotal}\n\nShipping Address:\n${formData.shipping_address}\n${formData.city}, ${formData.state}\nPincode: ${formData.pincode}\n\nPayment Method: ${formData.payment_method === 'cod' ? 'Cash on Delivery' : 'Online Payment'}\n\nWe will process your order shortly and send you tracking details once shipped.\n\nFor any queries, contact us at:\nPhone: +91-XXXXXXXXXX\nEmail: noorherbs2025@gmail.com\n\nThank you for choosing Noor Herbs!\n\nBest regards,\nNoor Herbs Team`
+        });
+      }
 
       // Clear cart
       localStorage.setItem('noorherbs_cart', JSON.stringify([]));
       window.dispatchEvent(new Event('cartUpdated'));
 
-      toast.success("Order placed successfully!");
-      window.location.href = createPageUrl(`OrderConfirmation?order=${orderNumber}`);
+      // Show success message
+      toast.success("🎉 Order placed successfully!");
+      
+      // Redirect to confirmation page
+      setTimeout(() => {
+        window.location.href = createPageUrl(`OrderConfirmation?order=${orderNumber}`);
+      }, 1000);
+      
     } catch (error) {
-      toast.error("Failed to place order. Please try again.");
+      console.error("Order creation error:", error);
+      toast.error("Failed to place order. Please try again or contact support.");
+      setIsSubmitting(false);
     }
-
-    setIsSubmitting(false);
   };
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -208,6 +244,7 @@ export default function Checkout() {
                       value={formData.customer_name}
                       onChange={(e) => setFormData({...formData, customer_name: e.target.value})}
                       className="mt-1"
+                      placeholder="Enter your full name"
                       required
                     />
                   </div>
@@ -219,7 +256,9 @@ export default function Checkout() {
                       value={formData.customer_email}
                       onChange={(e) => setFormData({...formData, customer_email: e.target.value})}
                       className="mt-1"
+                      placeholder="your@email.com"
                     />
+                    <p className="text-xs text-gray-500 mt-1">Optional - for order confirmation email</p>
                   </div>
                   <div>
                     <Label htmlFor="phone">Phone Number *</Label>
@@ -228,6 +267,7 @@ export default function Checkout() {
                       value={formData.customer_phone}
                       onChange={(e) => setFormData({...formData, customer_phone: e.target.value})}
                       className="mt-1"
+                      placeholder="+91 XXXXXXXXXX"
                       required
                     />
                   </div>
@@ -251,6 +291,7 @@ export default function Checkout() {
                       onChange={(e) => setFormData({...formData, shipping_address: e.target.value})}
                       className="mt-1"
                       rows={3}
+                      placeholder="House/Flat No., Street, Area"
                       required
                     />
                   </div>
@@ -262,6 +303,7 @@ export default function Checkout() {
                         value={formData.city}
                         onChange={(e) => setFormData({...formData, city: e.target.value})}
                         className="mt-1"
+                        placeholder="City"
                         required
                       />
                     </div>
@@ -272,6 +314,7 @@ export default function Checkout() {
                         value={formData.state}
                         onChange={(e) => setFormData({...formData, state: e.target.value})}
                         className="mt-1"
+                        placeholder="State"
                       />
                     </div>
                     <div>
@@ -281,6 +324,7 @@ export default function Checkout() {
                         value={formData.pincode}
                         onChange={(e) => setFormData({...formData, pincode: e.target.value})}
                         className="mt-1"
+                        placeholder="000000"
                         required
                       />
                     </div>
@@ -329,45 +373,45 @@ export default function Checkout() {
               <div className="bg-white rounded-2xl p-6 sticky top-24">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
 
-                                    {/* Coupon Code */}
-                                    <div className="mb-6">
-                                      {!appliedCoupon ? (
-                                        <div className="flex gap-2">
-                                          <Input 
-                                            placeholder="Coupon code" 
-                                            value={couponCode}
-                                            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                                            className="rounded-full"
-                                          />
-                                          <Button 
-                                            type="button"
-                                            variant="outline" 
-                                            className="rounded-full px-6"
-                                            onClick={applyCoupon}
-                                            disabled={isApplyingCoupon}
-                                          >
-                                            {isApplyingCoupon ? <Loader2 className="w-4 h-4 animate-spin" /> : "Apply"}
-                                          </Button>
-                                        </div>
-                                      ) : (
-                                        <div className="flex items-center justify-between bg-green-50 p-3 rounded-xl">
-                                          <div className="flex items-center gap-2 text-green-700">
-                                            <Tag className="w-4 h-4" />
-                                            <span className="font-medium">{appliedCoupon.coupon_code}</span>
-                                            <span className="text-sm">(-{appliedCoupon.coupon_discount_percent}%)</span>
-                                          </div>
-                                          <button 
-                                            type="button"
-                                            onClick={removeCoupon}
-                                            className="text-red-500 text-sm hover:underline"
-                                          >
-                                            Remove
-                                          </button>
-                                        </div>
-                                      )}
-                                    </div>
+                {/* Coupon Code */}
+                <div className="mb-6">
+                  {!appliedCoupon ? (
+                    <div className="flex gap-2">
+                      <Input 
+                        placeholder="Coupon code" 
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        className="rounded-full"
+                      />
+                      <Button 
+                        type="button"
+                        variant="outline" 
+                        className="rounded-full px-6"
+                        onClick={applyCoupon}
+                        disabled={isApplyingCoupon}
+                      >
+                        {isApplyingCoupon ? <Loader2 className="w-4 h-4 animate-spin" /> : "Apply"}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between bg-green-50 p-3 rounded-xl">
+                      <div className="flex items-center gap-2 text-green-700">
+                        <Tag className="w-4 h-4" />
+                        <span className="font-medium">{appliedCoupon.coupon_code}</span>
+                        <span className="text-sm">(-{appliedCoupon.coupon_discount_percent}%)</span>
+                      </div>
+                      <button 
+                        type="button"
+                        onClick={removeCoupon}
+                        className="text-red-500 text-sm hover:underline"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+                </div>
 
-                                    {/* Items */}
+                {/* Items */}
                 <div className="space-y-4 mb-6">
                   {cartItems.map((item) => (
                     <div key={item.product_id} className="flex gap-3">
@@ -388,27 +432,27 @@ export default function Checkout() {
                 </div>
 
                 <div className="border-t pt-4 space-y-3 mb-6">
-                                      <div className="flex justify-between text-gray-600">
-                                        <span>Subtotal</span>
-                                        <span>₹{subtotal}</span>
-                                      </div>
-                                      {couponDiscount > 0 && (
-                                        <div className="flex justify-between text-green-600">
-                                          <span>Coupon Discount</span>
-                                          <span>-₹{couponDiscount}</span>
-                                        </div>
-                                      )}
-                                      <div className="flex justify-between text-gray-600">
-                                        <span>Shipping</span>
-                                        <span>{shipping === 0 ? 'Free' : `₹${shipping}`}</span>
-                                      </div>
-                                      <div className="border-t pt-3">
-                                        <div className="flex justify-between text-lg font-bold text-gray-900">
-                                          <span>Total</span>
-                                          <span>₹{total}</span>
-                                        </div>
-                                      </div>
-                                    </div>
+                  <div className="flex justify-between text-gray-600">
+                    <span>Subtotal</span>
+                    <span>₹{subtotal}</span>
+                  </div>
+                  {couponDiscount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Coupon Discount</span>
+                      <span>-₹{couponDiscount}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-gray-600">
+                    <span>Shipping</span>
+                    <span>{shipping === 0 ? 'Free' : `₹${shipping}`}</span>
+                  </div>
+                  <div className="border-t pt-3">
+                    <div className="flex justify-between text-lg font-bold text-gray-900">
+                      <span>Total</span>
+                      <span>₹{total}</span>
+                    </div>
+                  </div>
+                </div>
 
                 <Button 
                   type="submit"
@@ -416,7 +460,10 @@ export default function Checkout() {
                   className="w-full bg-orange-500 hover:bg-orange-600 h-14 rounded-full text-lg"
                 >
                   {isSubmitting ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                      Processing...
+                    </>
                   ) : (
                     <>
                       <CheckCircle2 className="w-5 h-5 mr-2" />

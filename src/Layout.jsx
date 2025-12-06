@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import AffiliateTracker from "@/components/affiliate/AffiliateTracker";
+import { Toaster } from "sonner";
 
 // SEO Keywords for Noor Herbs - Ayurvedic & Nutraceutical Products
 const SEO_KEYWORDS = "sea buckthorn juice, ayurvedic medicine, herbal supplements, nutraceuticals, immunity booster, anti-aging, cancer prevention, omega 3 6 9 7, vitamin C, ladakh herbs, natural wellness, organic supplements, herbal remedies, ayurveda, nutra products, health supplements, antioxidants, skin health, heart health, liver detox, weight management, digestive health, energy booster, natural immunity, DRDO approved, GMP certified, FSSAI approved, halal kosher certified";
@@ -77,6 +78,7 @@ export default function Layout({ children }) {
                 {children}
               </main>
       <Footer />
+      <Toaster richColors position="top-right" duration={4000} />
     </div>
   );
 }
