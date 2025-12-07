@@ -5,6 +5,7 @@ import HeroBanner from "@/components/home/HeroBanner";
 import CategoryBar from "@/components/home/CategoryBar";
 import BestsellerSection from "@/components/home/BestsellerSection";
 import WhyChooseUs from "@/components/home/WhyChooseUs";
+import FeaturedBanner from "@/components/home/FeaturedBanner";
 import TestimonialSection from "@/components/home/TestimonialSection";
 import VideoReviewsSection from "@/components/home/VideoReviewsSection";
 import WhatsAppButton from "@/components/home/WhatsAppButton";
@@ -45,6 +46,7 @@ export default function Home() {
       <HeroBanner />
       <CategoryBar />
       <BestsellerSection products={products} onAddToCart={handleAddToCart} />
+      <FeaturedBanner />
       <VideoReviewsSection />
       <WhyChooseUs />
       <TestimonialSection />
