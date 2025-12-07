@@ -1,6 +1,7 @@
 import React from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
+import HeroBanner from "@/components/home/HeroBanner";
 import CategoryBar from "@/components/home/CategoryBar";
 import BestsellerSection from "@/components/home/BestsellerSection";
 import WhyChooseUs from "@/components/home/WhyChooseUs";
@@ -41,6 +42,7 @@ export default function Home() {
 
   return (
     <div>
+      <HeroBanner />
       <CategoryBar />
       <BestsellerSection products={products} onAddToCart={handleAddToCart} />
       <VideoReviewsSection />
