@@ -181,64 +181,87 @@ export default function Checkout() {
         `${idx + 1}. ${item.product_name}\n   Quantity: ${item.quantity}\n   Price: ₹${item.price}\n   Subtotal: ₹${item.price * item.quantity}`
       ).join('\n\n');
 
-      // Send comprehensive email to admin with all order details
-      const customerItemsList = cartItems.map((item, idx) => 
-        `${idx + 1}. ${item.product_name}\n   Quantity: ${item.quantity} | Price: ₹${item.price} each\n   Subtotal: ₹${item.price * item.quantity}`
-      ).join('\n\n');
+      // Format items list for email
+      const emailItemsList = cartItems.map(item => 
+        `${item.product_name} (${item.quantity}) — ₹${item.price * item.quantity}`
+      ).join('\n');
 
-      await base44.integrations.Core.SendEmail({
-        to: "wahenoorenterprises@gmail.com",
-        subject: `🎉 New Order Received - ${orderNumber}`,
-        body: `══════════════════════════════════
-🛍️ NEW ORDER RECEIVED
-══════════════════════════════════
+      const orderDate = new Date().toLocaleString('en-IN', { 
+        timeZone: 'Asia/Kolkata',
+        day: '2-digit',
+        month: '2-digit', 
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
 
-📋 ORDER DETAILS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Order Number: ${orderNumber}
-Order Date: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
+      const emailBody = `🛍️ New Order Received
 
-👤 CUSTOMER INFORMATION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Order No: ${orderNumber}
+Order Date: ${orderDate}
+
+👤 Customer Details
 Name: ${formData.customer_name}
 Phone: ${formData.customer_phone}
 Email: ${formData.customer_email || 'Not provided'}
 
-📦 SHIPPING ADDRESS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${formData.shipping_address}
-${formData.city}, ${formData.state}
-Pincode: ${formData.pincode}
+📍 Shipping Address
+${formData.shipping_address}, ${formData.city}, ${formData.state} – ${formData.pincode}
 
-🛒 ORDER ITEMS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${customerItemsList}
+🛒 Order Items
 
-💰 PAYMENT SUMMARY
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Subtotal:        ₹${subtotal}${couponDiscount > 0 ? `\nCoupon Discount: -₹${couponDiscount}` : ''}
-Shipping:        ${shipping === 0 ? 'FREE' : '₹' + shipping}
-───────────────────────────────────
-TOTAL:           ₹${finalTotal}
+${emailItemsList}
 
-💳 PAYMENT METHOD
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${formData.payment_method === 'cod' ? '💵 Cash on Delivery (COD)' : '💳 Online Payment'}${trackingAffiliate ? `
+💰 Payment Summary
+Subtotal: ₹${subtotal}${couponDiscount > 0 ? `\nDiscount: -₹${couponDiscount}` : ''}
+Shipping: ${shipping === 0 ? 'Free' : '₹' + shipping}
+Total: ₹${finalTotal}
 
-🤝 AFFILIATE REFERRAL
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Affiliate Name: ${trackingAffiliate.name}
-Affiliate ID: ${trackingAffiliate.affiliate_id}
+💳 Payment Method
+${formData.payment_method === 'cod' ? 'Cash on Delivery (COD)' : 'Online Payment'}${trackingAffiliate ? `
+
+🤝 Affiliate Referral
+Affiliate: ${trackingAffiliate.name} (${trackingAffiliate.affiliate_id})
 Source: ${affiliateSource === 'coupon' ? `Coupon Code (${trackingAffiliate.coupon_code})` : 'Referral Link'}` : ''}
 
-══════════════════════════════════
-⚠️ ACTION REQUIRED: Please contact customer to confirm order
+Please process this order.
 
-Customer Contact: ${formData.customer_phone}${formData.customer_email ? `\nCustomer Email: ${formData.customer_email}` : ''}
+— Noor Herbs Automated System`;
+
+      // Send email to admin
+      await base44.integrations.Core.SendEmail({
+        to: "wahenoorenterprises@gmail.com",
+        subject: `🎉 New Order Received - ${orderNumber}`,
+        body: emailBody
+      });
+
+      // Send confirmation email to customer if email provided
+      if (formData.customer_email && formData.customer_email.trim()) {
+        await base44.integrations.Core.SendEmail({
+          to: formData.customer_email,
+          subject: `Order Confirmation - ${orderNumber} - Noor Herbs`,
+          body: `Dear ${formData.customer_name},
+
+Thank you for your order! 🌿
+
+${emailBody}
+
+📱 What's Next?
+✓ Your order is being processed
+✓ We'll call you to confirm delivery details
+✓ Expected delivery: 3-5 business days
+
+📞 Need Help?
+Phone: +91-9469668833
+Email: wahenoorenterprises@gmail.com
+
+Thank you for choosing Noor Herbs!
 
 Best regards,
-Noor Herbs Automated System`
-      });
+Noor Herbs Team`
+        });
+      }
 
       localStorage.setItem('noorherbs_cart', JSON.stringify([]));
       window.dispatchEvent(new Event('cartUpdated'));
