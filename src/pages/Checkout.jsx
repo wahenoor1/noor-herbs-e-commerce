@@ -234,179 +234,112 @@ Best regards,
 Noor Herbs Automated System`
       }).catch(() => {});
 
-      // Send email to customer
+      // Send email to customer (with CC to admin)
       if (formData.customer_email && formData.customer_email.trim()) {
-        // Generate HTML items list
-        const htmlItems = cartItems.map((item, idx) => `
-          <tr style="border-bottom: 1px solid #e5e7eb;">
-            <td style="padding: 16px; font-family: Arial, sans-serif;">
-              <div style="font-weight: 500; color: #111827; margin-bottom: 4px;">${item.product_name}</div>
-              <div style="font-size: 14px; color: #6b7280;">Quantity: ${item.quantity}</div>
-            </td>
-            <td style="padding: 16px; text-align: right; font-family: Arial, sans-serif; color: #111827;">₹${item.price * item.quantity}</td>
-          </tr>
-        `).join('');
-
-        const htmlBody = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: Arial, sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f3f4f6; padding: 40px 20px;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-          
-          <!-- Header -->
-          <tr>
-            <td style="background: linear-gradient(135deg, #f97316 0%, #f59e0b 100%); padding: 40px 30px; text-align: center;">
-              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">Noor Herbs</h1>
-              <p style="margin: 10px 0 0 0; color: #ffffff; font-size: 14px; opacity: 0.95;">Premium Ayurvedic & Herbal Products</p>
-            </td>
-          </tr>
-
-          <!-- Thank You Message -->
-          <tr>
-            <td style="padding: 40px 30px 30px 30px; text-align: center;">
-              <h2 style="margin: 0 0 10px 0; color: #111827; font-size: 24px;">Thank you for your order, ${formData.customer_name}!</h2>
-              <p style="margin: 0; color: #6b7280; font-size: 16px;">We're processing it now and will let you know when it's on the way.</p>
-              <p style="margin: 8px 0 0 0; color: #f97316; font-weight: 500;">Expected delivery: 3-5 business days</p>
-            </td>
-          </tr>
-
-          <!-- Order Details -->
-          <tr>
-            <td style="padding: 0 30px 30px 30px;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb; border-radius: 8px; padding: 20px;">
-                <tr>
-                  <td style="padding: 0 0 12px 0;">
-                    <h3 style="margin: 0 0 16px 0; color: #111827; font-size: 18px; font-weight: 600;">Order details</h3>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <table width="100%" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="padding: 8px 0; color: #6b7280; font-size: 14px; width: 140px;">Order number</td>
-                        <td style="padding: 8px 0; color: #111827; font-size: 14px; font-weight: 500;">${orderNumber}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Order date</td>
-                        <td style="padding: 8px 0; color: #111827; font-size: 14px;">${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Payment method</td>
-                        <td style="padding: 8px 0; color: #111827; font-size: 14px;">${formData.payment_method === 'cod' ? 'Cash on Delivery' : 'Online Payment'}</td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Items -->
-          <tr>
-            <td style="padding: 0 30px 30px 30px;">
-              <h3 style="margin: 0 0 16px 0; color: #111827; font-size: 18px; font-weight: 600;">Items</h3>
-              <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
-                ${htmlItems}
-              </table>
-            </td>
-          </tr>
-
-          <!-- Order Summary -->
-          <tr>
-            <td style="padding: 0 30px 30px 30px;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb; border-radius: 8px; padding: 20px;">
-                <tr>
-                  <td style="padding-bottom: 16px;">
-                    <h3 style="margin: 0; color: #111827; font-size: 18px; font-weight: 600;">Order summary</h3>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <table width="100%" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Subtotal</td>
-                        <td style="padding: 8px 0; text-align: right; color: #111827; font-size: 14px;">₹${subtotal}</td>
-                      </tr>
-                      ${couponDiscount > 0 ? `
-                      <tr>
-                        <td style="padding: 8px 0; color: #16a34a; font-size: 14px;">Discount</td>
-                        <td style="padding: 8px 0; text-align: right; color: #16a34a; font-size: 14px;">-₹${couponDiscount.toFixed(2)}</td>
-                      </tr>
-                      ` : ''}
-                      <tr>
-                        <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Delivery${shipping === 0 ? ' (Free)' : ''}</td>
-                        <td style="padding: 8px 0; text-align: right; color: #111827; font-size: 14px;">${shipping === 0 ? 'Free' : '₹' + shipping}</td>
-                      </tr>
-                      <tr>
-                        <td colspan="2" style="padding: 12px 0 8px 0; border-top: 2px solid #e5e7eb;"></td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 8px 0; color: #111827; font-size: 16px; font-weight: 600;">Total</td>
-                        <td style="padding: 8px 0; text-align: right; color: #111827; font-size: 18px; font-weight: 700;">₹${finalTotal.toFixed(2)}</td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Shipping Address -->
-          <tr>
-            <td style="padding: 0 30px 30px 30px;">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="width: 50%; vertical-align: top; padding-right: 15px;">
-                    <h4 style="margin: 0 0 12px 0; color: #111827; font-size: 14px; font-weight: 600;">Delivery address</h4>
-                    <p style="margin: 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
-                      ${formData.customer_name}<br>
-                      ${formData.shipping_address}<br>
-                      ${formData.city}, ${formData.state}<br>
-                      ${formData.pincode}<br>
-                      India
-                    </p>
-                  </td>
-                  <td style="width: 50%; vertical-align: top; padding-left: 15px;">
-                    <h4 style="margin: 0 0 12px 0; color: #111827; font-size: 14px; font-weight: 600;">Contact details</h4>
-                    <p style="margin: 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
-                      Phone: ${formData.customer_phone}<br>
-                      Email: ${formData.customer_email}
-                    </p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td style="background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
-              <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 14px;">Need help? Contact us</p>
-              <p style="margin: 0 0 4px 0; color: #111827; font-size: 14px;">📞 +91-9469668833</p>
-              <p style="margin: 0 0 16px 0; color: #111827; font-size: 14px;">📧 wahenoorenterprises@gmail.com</p>
-              <p style="margin: 0; color: #9ca3af; font-size: 12px;">© 2025 Noor Herbs. All rights reserved.</p>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-        `;
+        const customerItemsList = cartItems.map((item, idx) => 
+          `${idx + 1}. ${item.product_name}\n   Quantity: ${item.quantity} | Price: ₹${item.price} each\n   Subtotal: ₹${item.price * item.quantity}`
+        ).join('\n\n');
 
         base44.integrations.Core.SendEmail({
           to: formData.customer_email,
           subject: `Order Confirmation - ${orderNumber} - Noor Herbs`,
-          body: htmlBody
+          body: `Dear ${formData.customer_name},
+
+Thank you for your order with Noor Herbs! 🌿
+
+══════════════════════════════════
+✅ ORDER CONFIRMED
+══════════════════════════════════
+
+Order Number: ${orderNumber}
+Order Date: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+
+📦 YOUR ORDER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${customerItemsList}
+
+💰 ORDER SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Subtotal:        ₹${subtotal}${couponDiscount > 0 ? `\nDiscount:        -₹${couponDiscount.toFixed(2)}` : ''}
+Delivery:        ${shipping === 0 ? 'FREE ✓' : '₹' + shipping}
+───────────────────────────────────
+TOTAL:           ₹${finalTotal.toFixed(2)}
+
+📍 DELIVERY ADDRESS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${formData.customer_name}
+${formData.shipping_address}
+${formData.city}, ${formData.state}
+Pincode: ${formData.pincode}
+Phone: ${formData.customer_phone}
+
+💳 PAYMENT METHOD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${formData.payment_method === 'cod' ? '💵 Cash on Delivery (COD)' : '💳 Online Payment'}
+
+📱 WHAT'S NEXT?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ Your order is being processed
+✓ You'll receive tracking details once shipped
+✓ Expected delivery: 3-5 business days
+
+📞 NEED HELP?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Phone: +91-9469668833
+Email: wahenoorenterprises@gmail.com
+
+══════════════════════════════════
+Thank you for choosing Noor Herbs!
+
+Best regards,
+Noor Herbs Team`
+        }).catch(() => {});
+        
+        // Send CC to admin
+        base44.integrations.Core.SendEmail({
+          to: "wahenoorenterprises@gmail.com",
+          subject: `📧 CC: Customer Order Confirmation - ${orderNumber}`,
+          body: `This is a copy of the order confirmation sent to customer.
+
+CUSTOMER: ${formData.customer_name} (${formData.customer_email})
+ORDER: ${orderNumber}
+TOTAL: ₹${finalTotal}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Dear ${formData.customer_name},
+
+Thank you for your order with Noor Herbs! 🌿
+
+══════════════════════════════════
+✅ ORDER CONFIRMED
+══════════════════════════════════
+
+Order Number: ${orderNumber}
+Order Date: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+
+📦 YOUR ORDER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${customerItemsList}
+
+💰 ORDER SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Subtotal:        ₹${subtotal}${couponDiscount > 0 ? `\nDiscount:        -₹${couponDiscount.toFixed(2)}` : ''}
+Delivery:        ${shipping === 0 ? 'FREE ✓' : '₹' + shipping}
+───────────────────────────────────
+TOTAL:           ₹${finalTotal.toFixed(2)}
+
+📍 DELIVERY ADDRESS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${formData.customer_name}
+${formData.shipping_address}
+${formData.city}, ${formData.state}
+Pincode: ${formData.pincode}
+Phone: ${formData.customer_phone}
+
+💳 PAYMENT METHOD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${formData.payment_method === 'cod' ? '💵 Cash on Delivery (COD)' : '💳 Online Payment'}`
         }).catch(() => {});
       }
 
