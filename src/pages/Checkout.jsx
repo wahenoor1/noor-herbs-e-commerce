@@ -182,7 +182,7 @@ export default function Checkout() {
       ).join('\n\n');
 
       // Send email to admin
-      base44.integrations.Core.SendEmail({
+      await base44.integrations.Core.SendEmail({
         to: "wahenoorenterprises@gmail.com",
         subject: `🎉 New Order Received - ${orderNumber}`,
         body: `══════════════════════════════════
@@ -232,7 +232,7 @@ Please process this order at your earliest convenience.
 
 Best regards,
 Noor Herbs Automated System`
-      }).catch(() => {});
+      });
 
       // Send email to customer (with CC to admin)
       if (formData.customer_email && formData.customer_email.trim()) {
@@ -240,7 +240,7 @@ Noor Herbs Automated System`
           `${idx + 1}. ${item.product_name}\n   Quantity: ${item.quantity} | Price: ₹${item.price} each\n   Subtotal: ₹${item.price * item.quantity}`
         ).join('\n\n');
 
-        base44.integrations.Core.SendEmail({
+        await base44.integrations.Core.SendEmail({
           to: formData.customer_email,
           subject: `Order Confirmation - ${orderNumber} - Noor Herbs`,
           body: `Dear ${formData.customer_name},
@@ -293,10 +293,10 @@ Thank you for choosing Noor Herbs!
 
 Best regards,
 Noor Herbs Team`
-        }).catch(() => {});
+        });
         
         // Send CC to admin
-        base44.integrations.Core.SendEmail({
+        await base44.integrations.Core.SendEmail({
           to: "wahenoorenterprises@gmail.com",
           subject: `📧 CC: Customer Order Confirmation - ${orderNumber}`,
           body: `This is a copy of the order confirmation sent to customer.
@@ -340,7 +340,7 @@ Phone: ${formData.customer_phone}
 💳 PAYMENT METHOD
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ${formData.payment_method === 'cod' ? '💵 Cash on Delivery (COD)' : '💳 Online Payment'}`
-        }).catch(() => {});
+        });
       }
 
       localStorage.setItem('noorherbs_cart', JSON.stringify([]));
