@@ -181,7 +181,11 @@ export default function Checkout() {
         `${idx + 1}. ${item.product_name}\n   Quantity: ${item.quantity}\n   Price: ₹${item.price}\n   Subtotal: ₹${item.price * item.quantity}`
       ).join('\n\n');
 
-      // Send email to admin
+      // Send comprehensive email to admin with all order details
+      const customerItemsList = cartItems.map((item, idx) => 
+        `${idx + 1}. ${item.product_name}\n   Quantity: ${item.quantity} | Price: ₹${item.price} each\n   Subtotal: ₹${item.price * item.quantity}`
+      ).join('\n\n');
+
       await base44.integrations.Core.SendEmail({
         to: "wahenoorenterprises@gmail.com",
         subject: `🎉 New Order Received - ${orderNumber}`,
@@ -208,12 +212,12 @@ Pincode: ${formData.pincode}
 
 🛒 ORDER ITEMS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${formattedItems}
+${customerItemsList}
 
 💰 PAYMENT SUMMARY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Subtotal:        ₹${subtotal}${couponDiscount > 0 ? `\nCoupon Discount: -₹${couponDiscount}` : ''}
-Shipping:        ${shipping === 0 ? 'Free' : '₹' + shipping}
+Shipping:        ${shipping === 0 ? 'FREE' : '₹' + shipping}
 ───────────────────────────────────
 TOTAL:           ₹${finalTotal}
 
@@ -228,120 +232,13 @@ Affiliate ID: ${trackingAffiliate.affiliate_id}
 Source: ${affiliateSource === 'coupon' ? `Coupon Code (${trackingAffiliate.coupon_code})` : 'Referral Link'}` : ''}
 
 ══════════════════════════════════
-Please process this order at your earliest convenience.
+⚠️ ACTION REQUIRED: Please contact customer to confirm order
+
+Customer Contact: ${formData.customer_phone}${formData.customer_email ? `\nCustomer Email: ${formData.customer_email}` : ''}
 
 Best regards,
 Noor Herbs Automated System`
       });
-
-      // Send email to customer (with CC to admin)
-      if (formData.customer_email && formData.customer_email.trim()) {
-        const customerItemsList = cartItems.map((item, idx) => 
-          `${idx + 1}. ${item.product_name}\n   Quantity: ${item.quantity} | Price: ₹${item.price} each\n   Subtotal: ₹${item.price * item.quantity}`
-        ).join('\n\n');
-
-        await base44.integrations.Core.SendEmail({
-          to: formData.customer_email,
-          subject: `Order Confirmation - ${orderNumber} - Noor Herbs`,
-          body: `Dear ${formData.customer_name},
-
-Thank you for your order with Noor Herbs! 🌿
-
-══════════════════════════════════
-✅ ORDER CONFIRMED
-══════════════════════════════════
-
-Order Number: ${orderNumber}
-Order Date: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-
-📦 YOUR ORDER
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${customerItemsList}
-
-💰 ORDER SUMMARY
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Subtotal:        ₹${subtotal}${couponDiscount > 0 ? `\nDiscount:        -₹${couponDiscount.toFixed(2)}` : ''}
-Delivery:        ${shipping === 0 ? 'FREE ✓' : '₹' + shipping}
-───────────────────────────────────
-TOTAL:           ₹${finalTotal.toFixed(2)}
-
-📍 DELIVERY ADDRESS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${formData.customer_name}
-${formData.shipping_address}
-${formData.city}, ${formData.state}
-Pincode: ${formData.pincode}
-Phone: ${formData.customer_phone}
-
-💳 PAYMENT METHOD
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${formData.payment_method === 'cod' ? '💵 Cash on Delivery (COD)' : '💳 Online Payment'}
-
-📱 WHAT'S NEXT?
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ Your order is being processed
-✓ You'll receive tracking details once shipped
-✓ Expected delivery: 3-5 business days
-
-📞 NEED HELP?
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Phone: +91-9469668833
-Email: wahenoorenterprises@gmail.com
-
-══════════════════════════════════
-Thank you for choosing Noor Herbs!
-
-Best regards,
-Noor Herbs Team`
-        });
-        
-        // Send CC to admin
-        await base44.integrations.Core.SendEmail({
-          to: "wahenoorenterprises@gmail.com",
-          subject: `📧 CC: Customer Order Confirmation - ${orderNumber}`,
-          body: `This is a copy of the order confirmation sent to customer.
-
-CUSTOMER: ${formData.customer_name} (${formData.customer_email})
-ORDER: ${orderNumber}
-TOTAL: ₹${finalTotal}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Dear ${formData.customer_name},
-
-Thank you for your order with Noor Herbs! 🌿
-
-══════════════════════════════════
-✅ ORDER CONFIRMED
-══════════════════════════════════
-
-Order Number: ${orderNumber}
-Order Date: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-
-📦 YOUR ORDER
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${customerItemsList}
-
-💰 ORDER SUMMARY
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Subtotal:        ₹${subtotal}${couponDiscount > 0 ? `\nDiscount:        -₹${couponDiscount.toFixed(2)}` : ''}
-Delivery:        ${shipping === 0 ? 'FREE ✓' : '₹' + shipping}
-───────────────────────────────────
-TOTAL:           ₹${finalTotal.toFixed(2)}
-
-📍 DELIVERY ADDRESS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${formData.customer_name}
-${formData.shipping_address}
-${formData.city}, ${formData.state}
-Pincode: ${formData.pincode}
-Phone: ${formData.customer_phone}
-
-💳 PAYMENT METHOD
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${formData.payment_method === 'cod' ? '💵 Cash on Delivery (COD)' : '💳 Online Payment'}`
-        });
-      }
 
       localStorage.setItem('noorherbs_cart', JSON.stringify([]));
       window.dispatchEvent(new Event('cartUpdated'));
