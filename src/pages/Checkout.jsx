@@ -229,41 +229,41 @@ Please process this order.
 
 — Noor Herbs Automated System`;
 
-      // Send email to admin via Resend
-      await base44.functions.invoke('sendEmail', {
+      // Send emails in background (don't block order success)
+      base44.functions.invoke('sendEmail', {
         to: "wahenoorenterprises@gmail.com",
         subject: `🎉 New Order Received - ${orderNumber}`,
         body: emailBody,
         from_name: "Noor Herbs"
-      });
+      }).catch(err => console.log('Admin email failed:', err));
 
       // Send confirmation email to customer if email provided
       if (formData.customer_email && formData.customer_email.trim()) {
-        await base44.functions.invoke('sendEmail', {
+        base44.functions.invoke('sendEmail', {
           to: formData.customer_email,
           subject: `Order Confirmation - ${orderNumber} - Noor Herbs`,
           body: `Dear ${formData.customer_name},
 
-Thank you for your order! 🌿
+        Thank you for your order! 🌿
 
-${emailBody}
+        ${emailBody}
 
-📱 What's Next?
-✓ Your order is being processed
-✓ We'll call you to confirm delivery details
-✓ Expected delivery: 3-5 business days
+        📱 What's Next?
+        ✓ Your order is being processed
+        ✓ We'll call you to confirm delivery details
+        ✓ Expected delivery: 3-5 business days
 
-📞 Need Help?
-Phone: +91-9469668833
-Email: wahenoorenterprises@gmail.com
+        📞 Need Help?
+        Phone: +91-9469668833
+        Email: wahenoorenterprises@gmail.com
 
-Thank you for choosing Noor Herbs!
+        Thank you for choosing Noor Herbs!
 
-Best regards,
-Noor Herbs Team`,
+        Best regards,
+        Noor Herbs Team`,
           from_name: "Noor Herbs"
-        });
-      }
+        }).catch(err => console.log('Customer email failed:', err));
+        }
 
       localStorage.setItem('noorherbs_cart', JSON.stringify([]));
       window.dispatchEvent(new Event('cartUpdated'));
