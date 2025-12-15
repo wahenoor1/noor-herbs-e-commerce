@@ -264,7 +264,7 @@ export default function AffiliateLogin() {
       });
       
       // Send email to admin
-      base44.integrations.Core.SendEmail({
+      base44.functions.invoke('sendEmail', {
         to: "wahenoorenterprises@gmail.com",
         subject: "🆕 New Affiliate Registration - Noor Herbs",
         body: `══════════════════════════════════
@@ -294,11 +294,12 @@ ${registerData.requested_coupon || 'No coupon requested'}
 Please review and approve/reject this affiliate application from the admin dashboard.
 
 ══════════════════════════════════
-Noor Herbs Affiliate System`
+Noor Herbs Affiliate System`,
+        from_name: "Noor Herbs"
       }).catch(() => {});
       
       // Send email to affiliate
-      base44.integrations.Core.SendEmail({
+      base44.functions.invoke('sendEmail', {
         to: registerData.email,
         subject: "✅ Registration Received - Noor Herbs Affiliate Program",
         body: `Dear ${registerData.name},
@@ -341,7 +342,8 @@ Thank you for joining Noor Herbs!
 
 Best regards,
 Noor Herbs Team
-Email: wahenoorenterprises@gmail.com`
+Email: wahenoorenterprises@gmail.com`,
+        from_name: "Noor Herbs"
       }).catch(() => {});
       
       setRegistrationSuccess(true);
@@ -374,7 +376,7 @@ Email: wahenoorenterprises@gmail.com`
       await base44.entities.Affiliate.update(affiliate.id, { status: 'approved' });
       
       // Send email to affiliate
-      base44.integrations.Core.SendEmail({
+      base44.functions.invoke('sendEmail', {
         to: affiliate.email,
         subject: "🎉 Affiliate Account Approved - Noor Herbs",
         body: `Dear ${affiliate.name},
@@ -421,11 +423,12 @@ Phone: +91-9469668833
 Welcome to the Noor Herbs family!
 
 Best regards,
-Noor Herbs Team`
+Noor Herbs Team`,
+        from_name: "Noor Herbs"
       }).catch(() => {});
       
       // Send notification to admin
-      base44.integrations.Core.SendEmail({
+      base44.functions.invoke('sendEmail', {
         to: "wahenoorenterprises@gmail.com",
         subject: "✅ Affiliate Approved - Noor Herbs",
         body: `Affiliate account has been approved:
@@ -435,7 +438,8 @@ Email: ${affiliate.email}
 Affiliate ID: ${affiliate.affiliate_id}
 Commission: ${affiliate.commission_type === 'fixed' ? `₹${affiliate.commission_value}` : `${affiliate.commission_value}%`}
 
-The affiliate has been notified via email.`
+The affiliate has been notified via email.`,
+        from_name: "Noor Herbs"
       }).catch(() => {});
       
       toast.success("Affiliate approved & emails sent!");
@@ -1053,32 +1057,33 @@ The affiliate has been notified via email.`
                           return;
                         }
 
-                        await base44.integrations.Core.SendEmail({
+                        await base44.functions.invoke('sendEmail', {
                           to: affiliate.email,
                           subject: "🔑 Password Recovery - Noor Herbs Affiliate",
                           body: `Dear ${affiliate.name},
 
-                    You requested password recovery for your Noor Herbs affiliate account.
+You requested password recovery for your Noor Herbs affiliate account.
 
-                    ══════════════════════════════════
-                    🔑 YOUR LOGIN CREDENTIALS
-                    ══════════════════════════════════
+══════════════════════════════════
+🔑 YOUR LOGIN CREDENTIALS
+══════════════════════════════════
 
-                    Email: ${affiliate.email}
-                    Password: ${affiliate.password}
+Email: ${affiliate.email}
+Password: ${affiliate.password}
 
-                    Login at: ${window.location.href}
+Login at: ${window.location.href}
 
-                    🔒 SECURITY TIP
-                    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                    Please keep your password secure and don't share it with anyone.
+🔒 SECURITY TIP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Please keep your password secure and don't share it with anyone.
 
-                    If you didn't request this, please contact us immediately.
+If you didn't request this, please contact us immediately.
 
-                    ══════════════════════════════════
-                    Best regards,
-                    Noor Herbs Team
-                    Email: wahenoorenterprises@gmail.com`
+══════════════════════════════════
+Best regards,
+Noor Herbs Team
+Email: wahenoorenterprises@gmail.com`,
+                          from_name: "Noor Herbs"
                         });
 
                         toast.success("Password sent to your email!");

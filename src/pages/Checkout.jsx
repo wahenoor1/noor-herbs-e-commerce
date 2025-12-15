@@ -229,16 +229,17 @@ Please process this order.
 
 — Noor Herbs Automated System`;
 
-      // Send email to admin
-      await base44.integrations.Core.SendEmail({
+      // Send email to admin via Resend
+      await base44.functions.invoke('sendEmail', {
         to: "wahenoorenterprises@gmail.com",
         subject: `🎉 New Order Received - ${orderNumber}`,
-        body: emailBody
+        body: emailBody,
+        from_name: "Noor Herbs"
       });
 
       // Send confirmation email to customer if email provided
       if (formData.customer_email && formData.customer_email.trim()) {
-        await base44.integrations.Core.SendEmail({
+        await base44.functions.invoke('sendEmail', {
           to: formData.customer_email,
           subject: `Order Confirmation - ${orderNumber} - Noor Herbs`,
           body: `Dear ${formData.customer_name},
@@ -259,7 +260,8 @@ Email: wahenoorenterprises@gmail.com
 Thank you for choosing Noor Herbs!
 
 Best regards,
-Noor Herbs Team`
+Noor Herbs Team`,
+          from_name: "Noor Herbs"
         });
       }
 
