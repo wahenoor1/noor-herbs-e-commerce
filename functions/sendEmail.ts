@@ -3,10 +3,6 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
 Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
-        
-        // Verify user is authenticated for non-system emails
-        const user = await base44.auth.me().catch(() => null);
-        
         const { to, subject, body, from_name } = await req.json();
         
         if (!to || !subject || !body) {
