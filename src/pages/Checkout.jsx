@@ -170,7 +170,7 @@ export default function Checkout() {
       
       // Razorpay options
       const options = {
-        key: keyData.key
+        key: keyData.key,
         amount: razorpayOrder.amount,
         currency: razorpayOrder.currency,
         name: "Noor Herbs",
