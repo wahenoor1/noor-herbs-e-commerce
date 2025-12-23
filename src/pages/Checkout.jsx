@@ -165,9 +165,12 @@ export default function Checkout() {
         throw new Error('Failed to create payment order');
       }
 
+      // Get Razorpay key from backend
+      const { data: keyData } = await base44.functions.invoke('getRazorpayKey');
+      
       // Razorpay options
       const options = {
-        key: "rzp_test_YOUR_KEY_ID", // Will be replaced with actual key
+        key: keyData.key
         amount: razorpayOrder.amount,
         currency: razorpayOrder.currency,
         name: "Noor Herbs",
