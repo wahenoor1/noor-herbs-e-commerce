@@ -20,6 +20,21 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { getAffiliateFromCookie, getAffiliateFromCoupon, calculateCommission } from "@/components/affiliate/AffiliateTracker";
 
+// Load Razorpay script
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 export default function Checkout() {
   const location = useLocation();
   const [cartItems, setCartItems] = useState([]);
@@ -114,16 +129,102 @@ export default function Checkout() {
 
     setIsSubmitting(true);
 
+    const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const shipping = subtotal >= 500 ? 0 : 50;
+    const finalTotal = subtotal - couponDiscount + shipping;
+
+    // If prepaid payment, initiate Razorpay
+    if (formData.payment_method === 'prepaid') {
+      await handleRazorpayPayment(finalTotal);
+      return;
+    }
+
+    // Continue with COD
+    await createOrder('cod', null);
+  };
+
+  const handleRazorpayPayment = async (amount) => {
+    const loaded = await loadRazorpayScript();
+    if (!loaded) {
+      toast.error("Failed to load payment gateway. Please try again.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const orderNumber = `NH${Date.now().toString().slice(-8)}`;
+      
+      // Create Razorpay order
+      const { data: razorpayOrder } = await base44.functions.invoke('createRazorpayOrder', {
+        amount: amount,
+        receipt: orderNumber,
+        currency: 'INR'
+      });
+
+      if (!razorpayOrder.success) {
+        throw new Error('Failed to create payment order');
+      }
+
+      // Razorpay options
+      const options = {
+        key: "rzp_test_YOUR_KEY_ID", // Will be replaced with actual key
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        name: "Noor Herbs",
+        description: `Order ${orderNumber}`,
+        order_id: razorpayOrder.orderId,
+        handler: async (response) => {
+          // Verify payment
+          const { data: verification } = await base44.functions.invoke('verifyRazorpayPayment', {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature
+          });
+
+          if (verification.verified) {
+            await createOrder('prepaid', response.razorpay_payment_id);
+          } else {
+            toast.error("Payment verification failed");
+            setIsSubmitting(false);
+          }
+        },
+        prefill: {
+          name: formData.customer_name,
+          email: formData.customer_email,
+          contact: formData.customer_phone
+        },
+        theme: {
+          color: "#f97316"
+        },
+        modal: {
+          ondismiss: () => {
+            toast.error("Payment cancelled");
+            setIsSubmitting(false);
+          }
+        }
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast.error("Payment failed. Please try again.");
+      setIsSubmitting(false);
+    }
+  };
+
+  const createOrder = async (paymentMethod, paymentId) => {
     try {
       const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
       const shipping = subtotal >= 500 ? 0 : 50;
       const finalTotal = subtotal - couponDiscount + shipping;
-      const orderNumber = `NH${Date.now().toString().slice(-8)}`;
+      const orderNumber = paymentId ? `NH${Date.now().toString().slice(-8)}` : `NH${Date.now().toString().slice(-8)}`;
       
       // Create order
       const order = await base44.entities.Order.create({
         order_number: orderNumber,
         ...formData,
+        payment_method: paymentMethod,
         items: cartItems.map(item => ({
           product_id: item.product_id,
           product_name: item.product_name,
@@ -133,7 +234,8 @@ export default function Checkout() {
         subtotal,
         shipping_cost: shipping,
         total: finalTotal,
-        status: 'pending'
+        status: paymentMethod === 'prepaid' ? 'confirmed' : 'pending',
+        payment_id: paymentId || null
       });
 
       // Track affiliate conversion
@@ -219,7 +321,7 @@ Shipping: ${shipping === 0 ? 'Free' : '₹' + shipping}
 Total: ₹${finalTotal}
 
 💳 Payment Method
-${formData.payment_method === 'cod' ? 'Cash on Delivery (COD)' : 'Online Payment'}${trackingAffiliate ? `
+${paymentMethod === 'cod' ? 'Cash on Delivery (COD)' : `Online Payment (Paid)`}${paymentId ? `\nPayment ID: ${paymentId}` : ''}${trackingAffiliate ? `
 
 🤝 Affiliate Referral
 Affiliate: ${trackingAffiliate.name} (${trackingAffiliate.affiliate_id})

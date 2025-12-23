@@ -1,33 +1,33 @@
-import Home from './pages/Home';
-import Shop from './pages/Shop';
-import ProductDetails from './pages/ProductDetails';
+import About from './pages/About';
+import AdminAffiliates from './pages/AdminAffiliates';
+import AffiliateDashboard from './pages/AffiliateDashboard';
+import AffiliateLogin from './pages/AffiliateLogin';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
-import OrderConfirmation from './pages/OrderConfirmation';
-import About from './pages/About';
 import Contact from './pages/Contact';
-import TrackOrder from './pages/TrackOrder';
-import AffiliateLogin from './pages/AffiliateLogin';
-import AffiliateDashboard from './pages/AffiliateDashboard';
-import AdminAffiliates from './pages/AdminAffiliates';
+import Home from './pages/Home';
+import OrderConfirmation from './pages/OrderConfirmation';
+import ProductDetails from './pages/ProductDetails';
+import Shop from './pages/Shop';
 import TestEmail from './pages/TestEmail';
+import TrackOrder from './pages/TrackOrder';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Home": Home,
-    "Shop": Shop,
-    "ProductDetails": ProductDetails,
+    "About": About,
+    "AdminAffiliates": AdminAffiliates,
+    "AffiliateDashboard": AffiliateDashboard,
+    "AffiliateLogin": AffiliateLogin,
     "Cart": Cart,
     "Checkout": Checkout,
-    "OrderConfirmation": OrderConfirmation,
-    "About": About,
     "Contact": Contact,
-    "TrackOrder": TrackOrder,
-    "AffiliateLogin": AffiliateLogin,
-    "AffiliateDashboard": AffiliateDashboard,
-    "AdminAffiliates": AdminAffiliates,
+    "Home": Home,
+    "OrderConfirmation": OrderConfirmation,
+    "ProductDetails": ProductDetails,
+    "Shop": Shop,
     "TestEmail": TestEmail,
+    "TrackOrder": TrackOrder,
 }
 
 export const pagesConfig = {
