@@ -11,6 +11,7 @@ import ProductDetails from './pages/ProductDetails';
 import Shop from './pages/Shop';
 import TestEmail from './pages/TestEmail';
 import TrackOrder from './pages/TrackOrder';
+import WomensHealth from './pages/WomensHealth';
 import __Layout from './Layout.jsx';
 
 
@@ -28,6 +29,7 @@ export const PAGES = {
     "Shop": Shop,
     "TestEmail": TestEmail,
     "TrackOrder": TrackOrder,
+    "WomensHealth": WomensHealth,
 }
 
 export const pagesConfig = {
