@@ -98,9 +98,9 @@ export default function Contact() {
                 </div>
                 <div>
                   <h3 className="font-bold text-gray-900 mb-1">Phone</h3>
-                  <p className="text-gray-600">+91 70090 39292</p>
+                  <p className="text-gray-600">+91-98032-73425</p>
                   <a 
-                    href="https://wa.me/917009039292" 
+                    href="https://wa.me/919803273425" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-green-600 text-sm mt-2 hover:underline"

@@ -301,9 +301,7 @@ export default function Checkout() {
         hour12: true
       });
 
-      const emailBody = `🛍️ New Order Received
-
-Order No: ${orderNumber}
+      const emailBody = `Order No: ${orderNumber}
 Order Date: ${orderDate}
 
 👤 Customer Details
@@ -324,15 +322,25 @@ Shipping: ${shipping === 0 ? 'Free' : '₹' + shipping}
 Total: ₹${finalTotal}
 
 💳 Payment Method
-${paymentMethod === 'cod' ? 'Cash on Delivery (COD)' : `Online Payment (Paid)`}${paymentId ? `\nPayment ID: ${paymentId}` : ''}${trackingAffiliate ? `
-
-🤝 Affiliate Referral
-Affiliate: ${trackingAffiliate.name} (${trackingAffiliate.affiliate_id})
-Source: ${affiliateSource === 'coupon' ? `Coupon Code (${trackingAffiliate.coupon_code})` : 'Referral Link'}` : ''}
+${paymentMethod === 'cod' ? 'Cash on Delivery (COD)' : `Online Payment (Paid)`}${paymentId ? `\nPayment ID: ${paymentId}` : ''}
 
 Please process this order.
 
-— Noor Herbs Automated System`;
+— Noor Herbs Automated System
+
+📱 What's Next?
+✓ Your order is being processed
+✓ We'll call you to confirm delivery details
+✓ Expected delivery: 3-5 business days
+
+📞 Need Help?
+Phone: +91-98032-73425
+Email: wahenoorenterprises@gmail.com
+
+Thank you for choosing Noor Herbs!
+
+Best regards,
+Noor Herbs Team`;
 
       // Send emails in background (don't block order success)
       base44.functions.invoke('sendEmail', {
@@ -349,23 +357,9 @@ Please process this order.
           subject: `Order Confirmation - ${orderNumber} - Noor Herbs`,
           body: `Dear ${formData.customer_name},
 
-        Thank you for your order! 🌿
+Thank you for your order! 🌿
 
-        ${emailBody}
-
-        📱 What's Next?
-        ✓ Your order is being processed
-        ✓ We'll call you to confirm delivery details
-        ✓ Expected delivery: 3-5 business days
-
-        📞 Need Help?
-        Phone: +91-9469668833
-        Email: wahenoorenterprises@gmail.com
-
-        Thank you for choosing Noor Herbs!
-
-        Best regards,
-        Noor Herbs Team`,
+${emailBody}`,
           from_name: "Noor Herbs"
         }).catch(err => console.log('Customer email failed:', err));
         }
