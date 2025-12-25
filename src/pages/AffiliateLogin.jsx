@@ -362,7 +362,7 @@ Email: wahenoorenterprises@gmail.com`,
   };
 
   const getAffiliateLink = (page = '') => {
-    const baseUrl = window.location.origin;
+    const baseUrl = 'https://noorherbs.com';
     return `${baseUrl}${page}?aff_id=${affiliateData?.affiliate_id}`;
   };
 
