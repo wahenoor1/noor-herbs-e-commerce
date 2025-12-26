@@ -461,8 +461,8 @@ Noor Herbs Lead Capture System`,
             </div>
             <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl bg-gray-100">
               <iframe
-                src="https://www.youtube.com/embed/WgHBy053BUU?start=30"
-                title="Health Benefits of Sea Buckthorn"
+                src="https://www.instagram.com/reels/DOMk-vQkqGI/embed"
+                title="Sea Buckthorn on Instagram"
                 className="w-full h-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen

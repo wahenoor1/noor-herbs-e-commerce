@@ -100,6 +100,7 @@ export default function Header({ cartCount = 0 }) {
                   ))}
                   <Link to={createPageUrl("SeaBuckthorn")} className="py-2 px-3 hover:bg-orange-50 rounded-lg font-medium">Sea Buckthorn</Link>
                   <Link to={createPageUrl("About")} className="py-2 px-3 hover:bg-orange-50 rounded-lg font-medium">About Us</Link>
+                  <Link to={createPageUrl("Blog")} className="py-2 px-3 hover:bg-orange-50 rounded-lg font-medium">Blog</Link>
                   <Link to={createPageUrl("Contact")} className="py-2 px-3 hover:bg-orange-50 rounded-lg font-medium">Contact</Link>
                 </nav>
               </div>
@@ -143,6 +144,9 @@ export default function Header({ cartCount = 0 }) {
             </Link>
             <Link to={createPageUrl("About")} className="font-medium text-gray-700 hover:text-orange-600 transition-colors">
               About
+            </Link>
+            <Link to={createPageUrl("Blog")} className="font-medium text-gray-700 hover:text-orange-600 transition-colors">
+              Blog
             </Link>
             <Link to={createPageUrl("Contact")} className="font-medium text-gray-700 hover:text-orange-600 transition-colors">
               Contact
