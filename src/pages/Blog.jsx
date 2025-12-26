@@ -140,10 +140,12 @@ export default function Blog() {
                     <User className="w-4 h-4" />
                     <span>{post.author}</span>
                   </div>
-                  <button className="text-orange-600 hover:text-orange-700 font-medium text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
-                    Read More
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
+                  <Link to={createPageUrl(`BlogPost?id=${post.id}`)}>
+                    <button className="text-orange-600 hover:text-orange-700 font-medium text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
+                      Read More
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </Link>
                 </div>
               </div>
             </motion.article>
