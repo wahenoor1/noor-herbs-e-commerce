@@ -129,44 +129,8 @@ Noor Herbs Lead Capture System`,
         </div>
       </div>
 
-      {/* What is Sea Buckthorn */}
+      {/* Main Content */}
       <div id="learn-more" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="grid lg:grid-cols-2 gap-12 items-center mb-20"
-        >
-          <div>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              What is Sea Buckthorn?
-            </h2>
-            <p className="text-lg text-gray-700 leading-relaxed mb-6">
-              Sea buckthorn (<em>Hippophae rhamnoides</em>) is a golden-orange berry that thrives in the harsh conditions and high altitudes of the Himalayas. Known as <strong>"Heaven's Holy Fruit"</strong>, this wonder berry has been used for centuries in traditional medicine.
-            </p>
-            <p className="text-lg text-gray-700 leading-relaxed mb-6">
-              The roots of sea buckthorn bushes go down 200 feet deep into the ground to gather nutrition for survival in the extreme Himalayan climate, making it one of nature's most resilient and nutrient-dense plants.
-            </p>
-            <p className="text-lg text-gray-700 leading-relaxed">
-              In Ayurveda, it's revered as the modern-day <strong>"Sanjeevani Booti"</strong> (life-giving herb), referencing the mythical plant from the Ramayana that was used to revive Lord Rama's brother Lakshman.
-            </p>
-          </div>
-          <div className="relative">
-            <img 
-              src="https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?q=80&w=1000"
-              alt="Sea Buckthorn berries on branch"
-              className="rounded-3xl shadow-2xl w-full"
-            />
-            <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl p-6 shadow-xl max-w-xs">
-              <div className="flex items-center gap-3 mb-2">
-                <Award className="w-8 h-8 text-orange-500" />
-                <span className="font-bold text-gray-900">190+</span>
-              </div>
-              <p className="text-sm text-gray-600">Bioactive Compounds</p>
-            </div>
-          </div>
-        </motion.div>
-
         {/* Historical Facts with Images - Biosash Style */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
