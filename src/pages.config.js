@@ -12,6 +12,7 @@ import Shop from './pages/Shop';
 import TestEmail from './pages/TestEmail';
 import TrackOrder from './pages/TrackOrder';
 import WomensHealth from './pages/WomensHealth';
+import SeaBuckthorn from './pages/SeaBuckthorn';
 import __Layout from './Layout.jsx';
 
 
@@ -30,6 +31,7 @@ export const PAGES = {
     "TestEmail": TestEmail,
     "TrackOrder": TrackOrder,
     "WomensHealth": WomensHealth,
+    "SeaBuckthorn": SeaBuckthorn,
 }
 
 export const pagesConfig = {
