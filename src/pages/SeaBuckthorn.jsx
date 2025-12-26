@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from "@/api/base44Client";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +13,10 @@ import {
   Sparkles, 
   Zap,
   CheckCircle2,
-  Loader2
+  Loader2,
+  Award,
+  Star,
+  ShoppingCart
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -57,84 +62,184 @@ Noor Herbs Lead Capture System`,
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="relative bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-500 py-20 px-4 overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full blur-3xl"></div>
-          <div className="absolute bottom-10 right-10 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+    <div className="min-h-screen bg-white">
+      {/* Hero Banner with Product Image */}
+      <div className="relative bg-gradient-to-br from-orange-600 via-orange-500 to-amber-500 py-20 overflow-hidden">
+        <div className="absolute inset-0 opacity-20">
+          <img 
+            src="https://images.unsplash.com/photo-1566392278241-46e37b11da5e?q=80&w=2000" 
+            alt="Sea Buckthorn berries"
+            className="w-full h-full object-cover"
+          />
         </div>
+        <div className="absolute inset-0 bg-gradient-to-r from-orange-600/90 to-amber-500/80"></div>
         
-        <div className="max-w-7xl mx-auto relative z-10">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center"
-          >
-            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-6 py-2 mb-6">
-              <Leaf className="w-5 h-5 text-white" />
-              <span className="text-white font-medium">The Modern-Day Sanjeevani Booti</span>
-            </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-              Sea Buckthorn
-            </h1>
-            <p className="text-xl text-white/90 max-w-3xl mx-auto mb-8">
-              Nature's most powerful superfood from the Himalayas, packed with over 190 bioactive compounds
-            </p>
-          </motion.div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <motion.div 
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
+                <Leaf className="w-5 h-5 text-white" />
+                <span className="text-white font-medium">Heaven's Holy Fruit</span>
+              </div>
+              <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+                Sea Buckthorn
+              </h1>
+              <p className="text-2xl text-white/95 mb-4 font-medium">
+                The Modern-Day Sanjeevani Booti
+              </p>
+              <p className="text-lg text-white/90 mb-8 leading-relaxed">
+                Nature's most balanced fruit from the Himalayas, packed with over 190 bioactive compounds for ultimate health and vitality
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <Link to={createPageUrl("Shop")}>
+                  <Button className="bg-white text-orange-600 hover:bg-gray-100 h-14 px-8 rounded-full text-lg font-medium">
+                    <ShoppingCart className="w-5 h-5 mr-2" />
+                    Shop Now
+                  </Button>
+                </Link>
+                <Button 
+                  variant="outline" 
+                  className="border-2 border-white text-white hover:bg-white/10 h-14 px-8 rounded-full text-lg font-medium"
+                  onClick={() => document.getElementById('learn-more')?.scrollIntoView({ behavior: 'smooth' })}
+                >
+                  Learn More
+                </Button>
+              </div>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="hidden lg:block"
+            >
+              <div className="relative">
+                <img 
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692d8181feb1ac797ea503b0/f46928364_WhatsAppImage2025-11-27at144626.jpg"
+                  alt="Noor Herbs Sea Buckthorn Juice"
+                  className="w-full max-w-md mx-auto drop-shadow-2xl"
+                />
+              </div>
+            </motion.div>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* What is Sea Buckthorn */}
+      {/* What is Sea Buckthorn */}
+      <div id="learn-more" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-3xl p-8 md:p-12 mb-12 shadow-lg"
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="grid lg:grid-cols-2 gap-12 items-center mb-20"
         >
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">What is Sea Buckthorn?</h2>
-          <p className="text-lg text-gray-600 leading-relaxed mb-6">
-            Sea buckthorn (Hippophae rhamnoides) is known as the modern-day <strong>"Sanjeevani Booti"</strong> (life-giving herb) in Ayurveda, referencing the mythical plant from the Ramayana, due to its exceptional nutrient density and vast health benefits.
-          </p>
-          <p className="text-lg text-gray-600 leading-relaxed">
-            This remarkable plant contains high levels of vitamins (C, E, A), minerals, antioxidants, and rare Omega-7, making it a powerful superfood for immunity, skin, heart, and overall wellness, traditionally used in the Himalayas for healing and vitality.
-          </p>
+          <div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              What is Sea Buckthorn?
+            </h2>
+            <p className="text-lg text-gray-700 leading-relaxed mb-6">
+              Sea buckthorn (<em>Hippophae rhamnoides</em>) is a golden-orange berry that thrives in the harsh conditions and high altitudes of the Himalayas. Known as <strong>"Heaven's Holy Fruit"</strong>, this wonder berry has been used for centuries in traditional medicine.
+            </p>
+            <p className="text-lg text-gray-700 leading-relaxed mb-6">
+              The roots of sea buckthorn bushes go down 200 feet deep into the ground to gather nutrition for survival in the extreme Himalayan climate, making it one of nature's most resilient and nutrient-dense plants.
+            </p>
+            <p className="text-lg text-gray-700 leading-relaxed">
+              In Ayurveda, it's revered as the modern-day <strong>"Sanjeevani Booti"</strong> (life-giving herb), referencing the mythical plant from the Ramayana that was used to revive Lord Rama's brother Lakshman.
+            </p>
+          </div>
+          <div className="relative">
+            <img 
+              src="https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?q=80&w=1000"
+              alt="Sea Buckthorn berries on branch"
+              className="rounded-3xl shadow-2xl w-full"
+            />
+            <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl p-6 shadow-xl max-w-xs">
+              <div className="flex items-center gap-3 mb-2">
+                <Award className="w-8 h-8 text-orange-500" />
+                <span className="font-bold text-gray-900">190+</span>
+              </div>
+              <p className="text-sm text-gray-600">Bioactive Compounds</p>
+            </div>
+          </div>
         </motion.div>
 
-        {/* Why Sanjeevani Booti */}
+        {/* Historical Facts Grid */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-3xl p-8 md:p-12 mb-12"
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-20"
         >
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Why It's Called Sanjeevani Booti</h2>
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="flex gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
-                  <Sparkles className="w-6 h-6 text-white" />
-                </div>
+          <h2 className="text-4xl font-bold text-gray-900 text-center mb-4">
+            History & Legendary Facts
+          </h2>
+          <p className="text-lg text-gray-600 text-center mb-12 max-w-3xl mx-auto">
+            Sea buckthorn has been treasured across civilizations for over 1,200 years
+          </p>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-8 border border-orange-100">
+              <div className="w-16 h-16 bg-orange-500 rounded-2xl flex items-center justify-center mb-4">
+                <Sparkles className="w-8 h-8 text-white" />
               </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Mythological Link</h3>
-                <p className="text-gray-600">
-                  Similar to the legendary herb used to revive Lakshman in the Ramayana, sea buckthorn is believed to possess unique, life-restoring properties.
-                </p>
-              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Ancient Ayurveda</h3>
+              <p className="text-gray-700">
+                According to scientific studies, all medicinal properties of sea buckthorn are similar to the legendary Sanjeevani Booti used in the Ramayana.
+              </p>
             </div>
-            <div className="flex gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
-                  <Leaf className="w-6 h-6 text-white" />
-                </div>
+
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-8 border border-green-100">
+              <div className="w-16 h-16 bg-green-600 rounded-2xl flex items-center justify-center mb-4">
+                <Award className="w-8 h-8 text-white" />
               </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Himalayan Origin</h3>
-                <p className="text-gray-600">
-                  It grows in harsh, high-altitude Himalayan regions, often called the "Cold Desert," adding to its mystical, potent reputation.
-                </p>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Genghis Khan's Secret</h3>
+              <p className="text-gray-700">
+                The Mongolian emperor regularly gave sea buckthorn to his soldiers and horses for increasing their strength and stamina in the 13th century.
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-8 border border-blue-100">
+              <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mb-4">
+                <Star className="w-8 h-8 text-white" />
               </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Greek Warriors</h3>
+              <p className="text-gray-700">
+                The Greek name "Hippophae rhamnoides" means "shiny horse" - Greeks gave it to their race horses for better health and glossy coats.
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border border-purple-100">
+              <div className="w-16 h-16 bg-purple-600 rounded-2xl flex items-center justify-center mb-4">
+                <Leaf className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Tibetan Medicine</h3>
+              <p className="text-gray-700">
+                The 18th century Tibetan medical book "Sibu Yidian" describes sea buckthorn's benefits across 30 pages of detailed documentation.
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl p-8 border border-red-100">
+              <div className="w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center mb-4">
+                <Zap className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Olympic Champions</h3>
+              <p className="text-gray-700">
+                Sea buckthorn was the main part of Chinese Olympians' diet and the "National Drink" at the 2008 Beijing Olympics.
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-2xl p-8 border border-yellow-100">
+              <div className="w-16 h-16 bg-yellow-600 rounded-2xl flex items-center justify-center mb-4">
+                <Shield className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Modern Research</h3>
+              <p className="text-gray-700">
+                Over 120 scientific research studies have been conducted worldwide, establishing it as the "Super Fruit of the Century."
+              </p>
             </div>
           </div>
         </motion.div>
@@ -142,42 +247,46 @@ Noor Herbs Lead Capture System`,
         {/* Nutritional Powerhouse */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white rounded-3xl p-8 md:p-12 mb-12 shadow-lg"
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="bg-gradient-to-br from-orange-500 to-amber-500 rounded-3xl p-8 md:p-16 mb-20 text-white"
         >
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">Nutritional Powerhouse</h2>
-          <p className="text-lg text-gray-600 mb-8">
-            Sea buckthorn is packed with over <strong>190 bioactive compounds</strong>, including:
-          </p>
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              A Complete Nutritional Powerhouse
+            </h2>
+            <p className="text-xl text-white/90 max-w-3xl mx-auto">
+              Sea buckthorn contains over 190 bioactive compounds - more than any other plant on Earth
+            </p>
+          </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-6">
-              <Zap className="w-8 h-8 text-orange-600 mb-4" />
-              <h3 className="font-bold text-gray-900 mb-2">Vitamins</h3>
-              <p className="text-sm text-gray-600">
-                Rich in Vitamin C (more than oranges!), A, E, K, and B vitamins
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <Zap className="w-10 h-10 mb-4" />
+              <h3 className="font-bold text-xl mb-3">Rich in Vitamins</h3>
+              <p className="text-white/90">
+                Vitamin C (15x more than oranges!), A, E, K, and B-complex vitamins
               </p>
             </div>
-            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6">
-              <Heart className="w-8 h-8 text-green-600 mb-4" />
-              <h3 className="font-bold text-gray-900 mb-2">Omegas</h3>
-              <p className="text-sm text-gray-600">
-                A rare source of Omega-7, plus Omega-3, 6, and 9 fatty acids
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <Heart className="w-10 h-10 mb-4" />
+              <h3 className="font-bold text-xl mb-3">Rare Omegas</h3>
+              <p className="text-white/90">
+                The only plant with Omega 3, 6, 9 AND rare Omega-7 fatty acids
               </p>
             </div>
-            <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6">
-              <Shield className="w-8 h-8 text-purple-600 mb-4" />
-              <h3 className="font-bold text-gray-900 mb-2">Antioxidants</h3>
-              <p className="text-sm text-gray-600">
-                Flavonoids, carotenoids, polyphenols, and tocopherols
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <Shield className="w-10 h-10 mb-4" />
+              <h3 className="font-bold text-xl mb-3">Antioxidants</h3>
+              <p className="text-white/90">
+                Powerful flavonoids, carotenoids, and polyphenols for protection
               </p>
             </div>
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6">
-              <Sparkles className="w-8 h-8 text-blue-600 mb-4" />
-              <h3 className="font-bold text-gray-900 mb-2">Minerals & Amino Acids</h3>
-              <p className="text-sm text-gray-600">
-                Essential minerals and 18 amino acids
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <Sparkles className="w-10 h-10 mb-4" />
+              <h3 className="font-bold text-xl mb-3">Essential Nutrients</h3>
+              <p className="text-white/90">
+                18 amino acids, essential minerals, and beneficial plant compounds
               </p>
             </div>
           </div>
@@ -186,39 +295,117 @@ Noor Herbs Lead Capture System`,
         {/* Health Benefits */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl p-8 md:p-12 mb-12"
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-20"
         >
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Health Benefits</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="flex gap-3">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Scientifically Proven Health Benefits
+            </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Backed by over 120 clinical research studies worldwide
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <div className="flex gap-4 bg-green-50 rounded-2xl p-6 border border-green-100">
               <CheckCircle2 className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
               <div>
-                <h3 className="font-bold text-gray-900 mb-1">Boosts Immunity</h3>
-                <p className="text-gray-600">Its high nutrient content supports a strong immune system</p>
+                <h3 className="font-bold text-gray-900 text-lg mb-2">Supercharges Immunity</h3>
+                <p className="text-gray-700">Exceptional nutrient density strengthens natural defenses and fights infections</p>
               </div>
             </div>
-            <div className="flex gap-3">
-              <CheckCircle2 className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
+            <div className="flex gap-4 bg-orange-50 rounded-2xl p-6 border border-orange-100">
+              <CheckCircle2 className="w-6 h-6 text-orange-600 flex-shrink-0 mt-1" />
               <div>
-                <h3 className="font-bold text-gray-900 mb-1">Skin Health</h3>
-                <p className="text-gray-600">Promotes skin glow, hydration, and anti-aging, with oils used in skincare</p>
+                <h3 className="font-bold text-gray-900 text-lg mb-2">Radiant Skin & Anti-Aging</h3>
+                <p className="text-gray-700">Promotes skin glow, hydration, and reduces signs of aging naturally</p>
               </div>
             </div>
-            <div className="flex gap-3">
-              <CheckCircle2 className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
+            <div className="flex gap-4 bg-red-50 rounded-2xl p-6 border border-red-100">
+              <CheckCircle2 className="w-6 h-6 text-red-600 flex-shrink-0 mt-1" />
               <div>
-                <h3 className="font-bold text-gray-900 mb-1">Heart & Digestive Health</h3>
-                <p className="text-gray-600">Supports cardiovascular function and digestion</p>
+                <h3 className="font-bold text-gray-900 text-lg mb-2">Heart Health</h3>
+                <p className="text-gray-700">Supports cardiovascular function and maintains healthy blood pressure</p>
               </div>
             </div>
-            <div className="flex gap-3">
-              <CheckCircle2 className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
+            <div className="flex gap-4 bg-blue-50 rounded-2xl p-6 border border-blue-100">
+              <CheckCircle2 className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
               <div>
-                <h3 className="font-bold text-gray-900 mb-1">Energy & Vitality</h3>
-                <p className="text-gray-600">Helps increase energy levels and combat fatigue</p>
+                <h3 className="font-bold text-gray-900 text-lg mb-2">Digestive Wellness</h3>
+                <p className="text-gray-700">Improves digestion, reduces inflammation, and heals gut lining</p>
               </div>
+            </div>
+            <div className="flex gap-4 bg-purple-50 rounded-2xl p-6 border border-purple-100">
+              <CheckCircle2 className="w-6 h-6 text-purple-600 flex-shrink-0 mt-1" />
+              <div>
+                <h3 className="font-bold text-gray-900 text-lg mb-2">Energy & Stamina</h3>
+                <p className="text-gray-700">Increases vitality, combats fatigue, and enhances physical performance</p>
+              </div>
+            </div>
+            <div className="flex gap-4 bg-yellow-50 rounded-2xl p-6 border border-yellow-100">
+              <CheckCircle2 className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-1" />
+              <div>
+                <h3 className="font-bold text-gray-900 text-lg mb-2">Liver Protection</h3>
+                <p className="text-gray-700">Helps detoxify and protect the liver from oxidative damage</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Product Showcase */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-8 md:p-16 mb-20 text-white overflow-hidden relative"
+        >
+          <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl"></div>
+          
+          <div className="grid lg:grid-cols-2 gap-12 items-center relative z-10">
+            <div>
+              <div className="inline-block bg-orange-500/20 text-orange-400 px-4 py-2 rounded-full text-sm font-medium mb-4">
+                Premium Quality
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold mb-6">
+                Noor Herbs Sea Buckthorn Juice
+              </h2>
+              <p className="text-xl text-gray-300 mb-6">
+                100% Pure, Wild-Harvested from Ladakh's Pristine Himalayas
+              </p>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-3">
+                  <CheckCircle2 className="w-6 h-6 text-green-400 flex-shrink-0" />
+                  <span className="text-gray-200">King of Vitamin C - 15x more than oranges</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <CheckCircle2 className="w-6 h-6 text-green-400 flex-shrink-0" />
+                  <span className="text-gray-200">Rich in Omega 3, 6, 9 & rare Omega 7</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <CheckCircle2 className="w-6 h-6 text-green-400 flex-shrink-0" />
+                  <span className="text-gray-200">DRDO Approved & GMP Certified</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <CheckCircle2 className="w-6 h-6 text-green-400 flex-shrink-0" />
+                  <span className="text-gray-200">No Preservatives or Artificial Colors</span>
+                </li>
+              </ul>
+              <Link to={createPageUrl("Shop")}>
+                <Button className="bg-orange-500 hover:bg-orange-600 h-14 px-8 rounded-full text-lg">
+                  <ShoppingCart className="w-5 h-5 mr-2" />
+                  Order Now
+                </Button>
+              </Link>
+            </div>
+            <div className="relative">
+              <img 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692d8181feb1ac797ea503b0/e639f29cb_WhatsAppImage2025-11-27at144623.jpg"
+                alt="Noor Herbs Sea Buckthorn Juice Product"
+                className="w-full max-w-md mx-auto drop-shadow-2xl"
+              />
             </div>
           </div>
         </motion.div>
@@ -226,13 +413,20 @@ Noor Herbs Lead Capture System`,
         {/* Video Section */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-white rounded-3xl p-8 md:p-12 mb-12 shadow-lg"
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-20"
         >
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Watch & Learn More</h2>
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="aspect-video rounded-2xl overflow-hidden bg-gray-100">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Watch & Discover More
+            </h2>
+            <p className="text-lg text-gray-600">
+              Learn from experts about the incredible benefits of Sea Buckthorn
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl bg-gray-100">
               <iframe
                 src="https://www.youtube.com/embed/WgHBy053BUU"
                 title="Sea Buckthorn - Sanjeevani Booti"
@@ -241,15 +435,40 @@ Noor Herbs Lead Capture System`,
                 allowFullScreen
               ></iframe>
             </div>
-            <div className="space-y-6">
-              <div className="aspect-video rounded-2xl overflow-hidden bg-gray-100">
-                <blockquote 
-                  className="instagram-media" 
-                  data-instgrm-permalink="https://www.instagram.com/reel/DNsx4Pr5Gd3/"
-                  data-instgrm-version="14"
-                  style={{ width: '100%', height: '100%' }}
-                ></blockquote>
-              </div>
+            <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl bg-gray-100">
+              <iframe
+                src="https://www.youtube.com/embed/WgHBy053BUU?start=30"
+                title="Health Benefits of Sea Buckthorn"
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Endorsements */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-3xl p-8 md:p-12 mb-20 border border-blue-100"
+        >
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">
+            Trusted & Endorsed Worldwide
+          </h2>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">In India</h3>
+              <p className="text-gray-700 leading-relaxed">
+                The Defence Research and Development Organization (DRDO) has endorsed and recognizes the immense benefits of Sea Buckthorn. It recommends sea buckthorn for soldiers of the Indian Army, especially those serving in high altitudes.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">In The West</h3>
+              <p className="text-gray-700 leading-relaxed">
+                Well-known personalities such as Dr. Oz on "The Dr. Oz Show", Oprah Winfrey, Dr. Ro the health Guru, and celebrity makeup artist Melissa Walsh have endorsed the beneficial effects of sea buckthorn for health and beauty.
+              </p>
             </div>
           </div>
         </motion.div>
@@ -257,15 +476,17 @@ Noor Herbs Lead Capture System`,
         {/* Lead Capture Form */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           className="bg-gradient-to-br from-orange-500 to-amber-500 rounded-3xl p-8 md:p-12 shadow-2xl"
         >
           <div className="max-w-2xl mx-auto">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-white mb-4">Want to Know More?</h2>
-              <p className="text-white/90">
-                Get in touch with us to learn more about our Sea Buckthorn products and how they can benefit your health
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                Want to Experience the Benefits?
+              </h2>
+              <p className="text-lg text-white/90">
+                Get in touch with us to learn more about our premium Sea Buckthorn products and start your wellness journey today
               </p>
             </div>
 
@@ -275,7 +496,9 @@ Noor Herbs Lead Capture System`,
                   <CheckCircle2 className="w-8 h-8 text-green-600" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">Thank You!</h3>
-                <p className="text-gray-600 mb-6">We've received your inquiry and will contact you soon.</p>
+                <p className="text-gray-600 mb-6">
+                  We've received your inquiry and our team will contact you within 24 hours.
+                </p>
                 <Button 
                   onClick={() => setSubmitted(false)}
                   variant="outline"
@@ -285,56 +508,58 @@ Noor Herbs Lead Capture System`,
                 </Button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-8 space-y-6">
-                <div>
-                  <Label htmlFor="name" className="text-gray-700">Full Name *</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="mt-2 h-12 rounded-full"
-                    placeholder="Enter your name"
-                    required
-                  />
+              <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 md:p-8 space-y-5">
+                <div className="grid md:grid-cols-2 gap-5">
+                  <div>
+                    <Label htmlFor="name" className="text-gray-700 font-medium">Full Name *</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      className="mt-2 h-12 rounded-xl"
+                      placeholder="Enter your name"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="phone" className="text-gray-700 font-medium">Phone Number *</Label>
+                    <Input
+                      id="phone"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      className="mt-2 h-12 rounded-xl"
+                      placeholder="+91 XXXXXXXXXX"
+                      required
+                    />
+                  </div>
                 </div>
                 <div>
-                  <Label htmlFor="email" className="text-gray-700">Email *</Label>
+                  <Label htmlFor="email" className="text-gray-700 font-medium">Email Address *</Label>
                   <Input
                     id="email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    className="mt-2 h-12 rounded-full"
+                    className="mt-2 h-12 rounded-xl"
                     placeholder="your@email.com"
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="phone" className="text-gray-700">Phone Number *</Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    className="mt-2 h-12 rounded-full"
-                    placeholder="+91 XXXXXXXXXX"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="message" className="text-gray-700">Message</Label>
+                  <Label htmlFor="message" className="text-gray-700 font-medium">Your Message</Label>
                   <Textarea
                     id="message"
                     value={formData.message}
                     onChange={(e) => setFormData({...formData, message: e.target.value})}
-                    className="mt-2 rounded-2xl"
+                    className="mt-2 rounded-xl"
                     rows={4}
-                    placeholder="Tell us what you'd like to know..."
+                    placeholder="Tell us what you'd like to know about Sea Buckthorn..."
                   />
                 </div>
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-14 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-full text-lg font-medium"
+                  className="w-full h-14 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl text-lg font-medium shadow-lg"
                 >
                   {isSubmitting ? (
                     <>
@@ -342,9 +567,15 @@ Noor Herbs Lead Capture System`,
                       Submitting...
                     </>
                   ) : (
-                    'Submit Inquiry'
+                    <>
+                      <CheckCircle2 className="w-5 h-5 mr-2" />
+                      Submit Inquiry
+                    </>
                   )}
                 </Button>
+                <p className="text-xs text-gray-500 text-center">
+                  We respect your privacy. Your information will never be shared with third parties.
+                </p>
               </form>
             )}
           </div>
