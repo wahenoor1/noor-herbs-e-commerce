@@ -64,68 +64,19 @@ Noor Herbs Lead Capture System`,
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Banner with Product Image */}
-      <div className="relative bg-gradient-to-br from-orange-600 via-orange-500 to-amber-500 py-20 overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <img 
-            src="https://images.unsplash.com/photo-1566392278241-46e37b11da5e?q=80&w=2000" 
-            alt="Sea Buckthorn berries"
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-orange-600/90 to-amber-500/80"></div>
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div 
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-                <Leaf className="w-5 h-5 text-white" />
-                <span className="text-white font-medium">Heaven's Holy Fruit</span>
-              </div>
-              <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-                Sea Buckthorn
-              </h1>
-              <p className="text-2xl text-white/95 mb-4 font-medium">
-                The Modern-Day Sanjeevani Booti
-              </p>
-              <p className="text-lg text-white/90 mb-8 leading-relaxed">
-                Nature's most balanced fruit from the Himalayas, packed with over 190 bioactive compounds for ultimate health and vitality
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <Link to={createPageUrl("Shop")}>
-                  <Button className="bg-white text-orange-600 hover:bg-gray-100 h-14 px-8 rounded-full text-lg font-medium">
-                    <ShoppingCart className="w-5 h-5 mr-2" />
-                    Shop Now
-                  </Button>
-                </Link>
-                <Button 
-                  variant="outline" 
-                  className="border-2 border-white text-white hover:bg-white/10 h-14 px-8 rounded-full text-lg font-medium"
-                  onClick={() => document.getElementById('learn-more')?.scrollIntoView({ behavior: 'smooth' })}
-                >
-                  Learn More
-                </Button>
-              </div>
-            </motion.div>
-
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="hidden lg:block"
-            >
-              <div className="relative">
-                <img 
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692d8181feb1ac797ea503b0/f46928364_WhatsAppImage2025-11-27at144626.jpg"
-                  alt="Noor Herbs Sea Buckthorn Juice"
-                  className="w-full max-w-md mx-auto drop-shadow-2xl"
-                />
-              </div>
-            </motion.div>
-          </div>
+      <div className="relative bg-gray-900 py-16 overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692d8181feb1ac797ea503b0/387bb72a5_image.png"
+              alt="Introducing Sea Buckthorn to the World"
+              className="w-full rounded-2xl shadow-2xl"
+            />
+          </motion.div>
         </div>
       </div>
 
