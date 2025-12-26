@@ -167,7 +167,7 @@ Noor Herbs Lead Capture System`,
           </div>
         </motion.div>
 
-        {/* Historical Facts with Images */}
+        {/* Historical Facts with Images - Biosash Style */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -175,142 +175,94 @@ Noor Herbs Lead Capture System`,
           className="mb-20"
         >
           <h2 className="text-4xl font-bold text-gray-900 text-center mb-4">
-            History & Legendary Facts
+            History & Facts of Seabuckthorn
           </h2>
           <p className="text-lg text-gray-600 text-center mb-12 max-w-3xl mx-auto">
             Sea buckthorn has been treasured across civilizations for over 1,200 years
           </p>
 
-          <div className="space-y-12">
+          <div className="max-w-4xl mx-auto space-y-8">
             {/* Sanjeevani Booti */}
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-              <div className="order-2 md:order-1">
-                <div className="bg-gradient-to-br from-orange-500 to-amber-500 text-white rounded-2xl p-8">
-                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-4">
-                    <Sparkles className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-3">The Sanjeevani Booti of Ramayana</h3>
-                  <p className="text-white/90 leading-relaxed">
-                    According to scientific studies, all medicinal properties of sea buckthorn are similar to the legendary Sanjivani Booti which was used to revive Lord Shree Ram's younger brother Lakshman Ji. That's why it is also called Sanjeevani Booti - the life-giving herb with miraculous healing powers.
-                  </p>
-                </div>
-              </div>
-              <div className="order-1 md:order-2">
-                <img 
-                  src="https://images.unsplash.com/photo-1604076984203-587c92ab2e58?q=80&w=800"
-                  alt="Ancient Ayurvedic tradition"
-                  className="rounded-2xl shadow-xl w-full h-80 object-cover"
-                />
+            <div className="flex gap-6 items-start">
+              <img 
+                src="https://images.unsplash.com/photo-1604076984203-587c92ab2e58?q=80&w=200"
+                alt="Ancient Ayurvedic tradition"
+                className="rounded-xl shadow-lg w-40 h-32 object-cover flex-shrink-0"
+              />
+              <div>
+                <p className="text-gray-700 leading-relaxed">
+                  According to scientific studies all medicinal properties of sea buckthorn are similar to the legendary Sanjivani Booti which was used to revive Lord Shree Ram's younger brother Lakshman Ji. That's why it is also called Sanjivini Booti.
+                </p>
               </div>
             </div>
 
             {/* Genghis Khan */}
-            <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div className="flex gap-6 items-start">
+              <img 
+                src="https://images.unsplash.com/photo-1576020799627-aeac74d58064?q=80&w=200"
+                alt="Mongolian warrior"
+                className="rounded-xl shadow-lg w-40 h-32 object-cover flex-shrink-0"
+              />
               <div>
-                <img 
-                  src="https://images.unsplash.com/photo-1576020799627-aeac74d58064?q=80&w=800"
-                  alt="Mongolian warrior"
-                  className="rounded-2xl shadow-xl w-full h-80 object-cover"
-                />
-              </div>
-              <div>
-                <div className="bg-gradient-to-br from-green-500 to-emerald-500 text-white rounded-2xl p-8">
-                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-4">
-                    <Award className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-3">Genghis Khan's Secret Weapon</h3>
-                  <p className="text-white/90 leading-relaxed">
-                    Mongolian emperor Genghis Khan was a great emperor of the 13th century. He had faith in his three powers – a well-arranged army, strong discipline, and sea buckthorn. Genghis Khan regularly used to give sea buckthorn to his soldiers and their horses for increasing their strength and stamina.
-                  </p>
-                </div>
+                <p className="text-gray-700 leading-relaxed">
+                  Mongolian emperor Changez Khan was a great emperor of 13th century. He had faith on his three powers – a well arranged army, strong discipline and sea buckthorn. Changez Khan regularly used to give sea buckthorn to his soldiers and their horses for increasing their strength and stamina.
+                </p>
               </div>
             </div>
 
             {/* Greek Tradition */}
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-              <div className="order-2 md:order-1">
-                <div className="bg-gradient-to-br from-blue-500 to-cyan-500 text-white rounded-2xl p-8">
-                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-4">
-                    <Star className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-3">The "Shiny Horse" Herb</h3>
-                  <p className="text-white/90 leading-relaxed">
-                    Sea buckthorn is known by its Greek name "Hippophae rhamnoides" which literally translated means "shiny horse". The Greeks used to give sea buckthorn to their race horses and war horses for better health and shiny hair, making them champions of ancient competitions.
-                  </p>
-                </div>
-              </div>
-              <div className="order-1 md:order-2">
-                <img 
-                  src="https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?q=80&w=800"
-                  alt="Ancient Greek horses"
-                  className="rounded-2xl shadow-xl w-full h-80 object-cover"
-                />
+            <div className="flex gap-6 items-start">
+              <img 
+                src="https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?q=80&w=200"
+                alt="Ancient Greek horses"
+                className="rounded-xl shadow-lg w-40 h-32 object-cover flex-shrink-0"
+              />
+              <div>
+                <p className="text-gray-700 leading-relaxed">
+                  Sea buckthorn is known by it's Greek name "Hippophae rhamnoides" which literally translated means "shiny horse". The Greeks used to give sea buckthorn to their race horses and war horses for better health and shiny hair.
+                </p>
               </div>
             </div>
 
             {/* Tibetan Medicine */}
-            <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div className="flex gap-6 items-start">
+              <img 
+                src="https://images.unsplash.com/photo-1582510003544-4d00b7f74220?q=80&w=200"
+                alt="Ancient Tibetan manuscripts"
+                className="rounded-xl shadow-lg w-40 h-32 object-cover flex-shrink-0"
+              />
               <div>
-                <img 
-                  src="https://images.unsplash.com/photo-1582510003544-4d00b7f74220?q=80&w=800"
-                  alt="Ancient Tibetan manuscripts"
-                  className="rounded-2xl shadow-xl w-full h-80 object-cover"
-                />
-              </div>
-              <div>
-                <div className="bg-gradient-to-br from-purple-500 to-pink-500 text-white rounded-2xl p-8">
-                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-4">
-                    <Leaf className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-3">Ancient Tibetan Wisdom</h3>
-                  <p className="text-white/90 leading-relaxed">
-                    Nutritional compounds and health benefits of sea buckthorn have been mentioned from centuries ago in medicinal books of Europe and Asia. The ancient Tibetan medical book of the 18th century "Sibu Yidian" describes sea buckthorn's health benefits and nutritional compounds on 30 of its pages.
-                  </p>
-                </div>
+                <p className="text-gray-700 leading-relaxed">
+                  Nutritional compounds and health benefits of sea buckthorn have been mentioned from centuries ago in medicinal books of Europe and Asia. The ancient Tibetan medical book of 18th century "Sibu Yidian" describes sea buckthorn's health benefits and nutritional compounds on 30 of it's pages.
+                </p>
               </div>
             </div>
 
             {/* Olympics */}
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-              <div className="order-2 md:order-1">
-                <div className="bg-gradient-to-br from-red-500 to-orange-500 text-white rounded-2xl p-8">
-                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-4">
-                    <Zap className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-3">Olympic Champions' Secret</h3>
-                  <p className="text-white/90 leading-relaxed">
-                    Sea buckthorn is the main part of diet for Chinese Olympians. And in the 2008 Olympics at Beijing, sea buckthorn was declared as the "National Drink". Athletes relied on its exceptional nutritional profile to enhance their performance and recovery.
-                  </p>
-                </div>
-              </div>
-              <div className="order-1 md:order-2">
-                <img 
-                  src="https://images.unsplash.com/photo-1551958219-acbc608c6377?q=80&w=800"
-                  alt="Olympic athletes"
-                  className="rounded-2xl shadow-xl w-full h-80 object-cover"
-                />
+            <div className="flex gap-6 items-start">
+              <img 
+                src="https://images.unsplash.com/photo-1551958219-acbc608c6377?q=80&w=200"
+                alt="Olympic athletes"
+                className="rounded-xl shadow-lg w-40 h-32 object-cover flex-shrink-0"
+              />
+              <div>
+                <p className="text-gray-700 leading-relaxed">
+                  Sea buckthorn is the main part of diet for Chinese Olympians. And in 2008 Olympics at Beijing, sea buckthorn was the "National Drink".
+                </p>
               </div>
             </div>
 
             {/* Scientific Research */}
-            <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div className="flex gap-6 items-start">
+              <img 
+                src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?q=80&w=200"
+                alt="Scientific research"
+                className="rounded-xl shadow-lg w-40 h-32 object-cover flex-shrink-0"
+              />
               <div>
-                <img 
-                  src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?q=80&w=800"
-                  alt="Scientific research"
-                  className="rounded-2xl shadow-xl w-full h-80 object-cover"
-                />
-              </div>
-              <div>
-                <div className="bg-gradient-to-br from-yellow-500 to-amber-500 text-white rounded-2xl p-8">
-                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-4">
-                    <Shield className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-3">Modern Scientific Validation</h3>
-                  <p className="text-white/90 leading-relaxed">
-                    There are now more than 120 scientific research studies on sea buckthorn for its number of health benefits. There is an extensive body of research on sea buckthorn from all over the world. Clinical trials have established that it is a wonder berry and the super fruit of the century.
-                  </p>
-                </div>
+                <p className="text-gray-700 leading-relaxed">
+                  There are now more than 120 scientific research studies on sea buckthorn for its number of health benefits. There is an extensive body of research on Seabuckthorn from all over the world. Clinical trials have established that it is a wonder berry and the super fruit of the century.
+                </p>
               </div>
             </div>
           </div>
