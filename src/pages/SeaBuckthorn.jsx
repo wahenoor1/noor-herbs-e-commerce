@@ -185,8 +185,8 @@ Noor Herbs Lead Capture System`,
             {/* Sanjeevani Booti */}
             <div className="flex gap-6 items-start">
               <img 
-                src="https://images.unsplash.com/photo-1604076984203-587c92ab2e58?q=80&w=200"
-                alt="Ancient Ayurvedic tradition"
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692d8181feb1ac797ea503b0/012a2674c_san.JPG"
+                alt="Sanjeevani Booti - Ramayana"
                 className="rounded-xl shadow-lg w-40 h-32 object-cover flex-shrink-0"
               />
               <div>
@@ -199,8 +199,8 @@ Noor Herbs Lead Capture System`,
             {/* Genghis Khan */}
             <div className="flex gap-6 items-start">
               <img 
-                src="https://images.unsplash.com/photo-1576020799627-aeac74d58064?q=80&w=200"
-                alt="Mongolian warrior"
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692d8181feb1ac797ea503b0/9fd1e2a93_changezkhan.JPG"
+                alt="Changez Khan Army"
                 className="rounded-xl shadow-lg w-40 h-32 object-cover flex-shrink-0"
               />
               <div>
