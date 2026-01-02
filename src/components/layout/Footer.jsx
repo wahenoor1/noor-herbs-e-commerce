@@ -126,10 +126,9 @@ export default function Footer() {
               </p>
             </div>
             <div className="flex gap-6 text-sm">
-              <Link to="#" className="text-gray-500 hover:text-orange-400">Privacy Policy</Link>
-              <Link to="#" className="text-gray-500 hover:text-orange-400">Terms of Service</Link>
-              <Link to="#" className="text-gray-500 hover:text-orange-400">Refund Policy</Link>
-              <Link to={createPageUrl("AdminProducts")} className="text-gray-600 hover:text-orange-400">Admin</Link>
+              <Link to={createPageUrl("TermsAndConditions")} className="text-gray-500 hover:text-orange-400">Terms & Conditions</Link>
+              <Link to={createPageUrl("RefundPolicy")} className="text-gray-500 hover:text-orange-400">Refund Policy</Link>
+              <Link to={createPageUrl("AdminLogin")} className="text-gray-600 hover:text-orange-400">Admin</Link>
             </div>
           </div>
         </div>
