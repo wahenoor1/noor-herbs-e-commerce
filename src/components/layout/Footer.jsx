@@ -129,6 +129,7 @@ export default function Footer() {
               <Link to="#" className="text-gray-500 hover:text-orange-400">Privacy Policy</Link>
               <Link to="#" className="text-gray-500 hover:text-orange-400">Terms of Service</Link>
               <Link to="#" className="text-gray-500 hover:text-orange-400">Refund Policy</Link>
+              <Link to={createPageUrl("AdminProducts")} className="text-gray-600 hover:text-orange-400">Admin</Link>
             </div>
           </div>
         </div>
