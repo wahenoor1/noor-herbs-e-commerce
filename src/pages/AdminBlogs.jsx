@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -37,9 +39,17 @@ import 'react-quill/dist/quill.snow.css';
 const categories = ["History & Culture", "Health & Wellness", "Product Knowledge", "Nutrition", "Research"];
 
 export default function AdminBlogs() {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
   const [uploading, setUploading] = useState(false);
+
+  React.useEffect(() => {
+    const isAdmin = localStorage.getItem('noorherbs_admin_auth') === 'true';
+    if (!isAdmin) {
+      navigate(createPageUrl('AdminLogin'));
+    }
+  }, [navigate]);
   
   const [formData, setFormData] = useState({
     title: '',
