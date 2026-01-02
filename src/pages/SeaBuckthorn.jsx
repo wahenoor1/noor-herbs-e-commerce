@@ -31,6 +31,35 @@ export default function SeaBuckthorn() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  React.useEffect(() => {
+    // Set Open Graph meta tags for rich social media previews
+    const metaTags = [
+      { property: 'og:title', content: 'Sea Buckthorn - The Modern-Day Sanjeevani Booti | Noor Herbs' },
+      { property: 'og:description', content: 'Discover the King of Vitamin C - Sea Buckthorn from Ladakh. 15x more Vitamin C than oranges, rich in rare Omega 7. 100% pure, DRDO approved, naturally boosts immunity, skin health & vitality.' },
+      { property: 'og:image', content: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692d8181feb1ac797ea503b0/387bb72a5_image.png' },
+      { property: 'og:url', content: 'https://noorherbs.com/seabuckthorn' },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:title', content: 'Sea Buckthorn - The Modern-Day Sanjeevani Booti | Noor Herbs' },
+      { name: 'twitter:description', content: 'King of Vitamin C from Ladakh Himalayas. 190+ bioactive compounds for immunity, anti-aging & wellness.' },
+      { name: 'twitter:image', content: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692d8181feb1ac797ea503b0/387bb72a5_image.png' }
+    ];
+
+    metaTags.forEach(tag => {
+      let meta = document.querySelector(`meta[${tag.property ? 'property' : 'name'}="${tag.property || tag.name}"]`);
+      if (!meta) {
+        meta = document.createElement('meta');
+        if (tag.property) meta.setAttribute('property', tag.property);
+        if (tag.name) meta.setAttribute('name', tag.name);
+        document.head.appendChild(meta);
+      }
+      meta.content = tag.content;
+    });
+
+    // Set page title
+    document.title = 'Sea Buckthorn - Heaven\'s Holy Fruit | Noor Herbs';
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
