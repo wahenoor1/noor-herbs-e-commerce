@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Calendar, Clock, User, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -403,8 +403,7 @@ No orange can compete with that. Upgrade your nutrition with Noor Herbs Sea Buck
 };
 
 export default function BlogPost() {
-  const location = useLocation();
-  const urlParams = new URLSearchParams(location.search);
+  const urlParams = new URLSearchParams(window.location.search);
   const postId = parseInt(urlParams.get('id'));
   
   const post = blogPosts[postId];
