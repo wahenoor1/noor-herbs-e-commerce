@@ -10,6 +10,19 @@ const PRODUCT_ID = '692d846e363964fa712ef3c8';
 const PRODUCT_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692d8181feb1ac797ea503b0/b914c6556_Untitled.png';
 
 export default function HeroBanner() {
+  const handleAddToCart = () => {
+    const cart = JSON.parse(localStorage.getItem('noorherbs_cart') || '[]');
+    const existingIndex = cart.findIndex(item => item.product_id === PRODUCT_ID);
+    if (existingIndex > -1) {
+      cart[existingIndex].quantity += 1;
+    } else {
+      cart.push({ product_id: PRODUCT_ID, product_name: 'Sea Buckthorn Juice', product_image: PRODUCT_IMAGE, price: 999, quantity: 1 });
+    }
+    localStorage.setItem('noorherbs_cart', JSON.stringify(cart));
+    window.dispatchEvent(new Event('cartUpdated'));
+    toast.success("Sea Buckthorn Juice added to cart!");
+  };
+
   return (
     <div className="relative overflow-hidden bg-gradient-to-br from-orange-50 via-amber-50 to-green-50">
       {/* Hidden SEO Content for Sea Buckthorn, Ayurveda, Nutraceuticals */}
