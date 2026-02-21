@@ -1,9 +1,13 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Leaf, Shield, Award } from "lucide-react";
+import { ArrowRight, Leaf, Shield, Award, ShoppingCart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
+
+const PRODUCT_ID = '692d846e363964fa712ef3c8';
+const PRODUCT_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692d8181feb1ac797ea503b0/b914c6556_Untitled.png';
 
 export default function HeroBanner() {
   return (
