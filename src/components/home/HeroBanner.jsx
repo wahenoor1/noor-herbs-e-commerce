@@ -101,24 +101,34 @@ export default function HeroBanner() {
             className="relative"
           >
             <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-orange-50 to-amber-50">
-              <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692d8181feb1ac797ea503b0/807f98568_ChatGPTImageDec2202510_50_37AM.png" 
-                alt="Noor Herbal Sea Buckthorn Juice - Ayurvedic Nutraceutical from Ladakh rich in Omega 3 6 9 7 Vitamin C for Immunity Anti-Aging Cancer Prevention"
-                className="w-full h-[400px] md:h-[500px] object-contain p-4"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+              <Link to={createPageUrl(`ProductDetails?id=${PRODUCT_ID}`)}>
+                <img 
+                  src={PRODUCT_IMAGE}
+                  alt="Noor Herbal Sea Buckthorn Juice - Ayurvedic Nutraceutical from Ladakh"
+                  className="w-full h-[400px] md:h-[500px] object-cover cursor-pointer"
+                />
+              </Link>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
               
               {/* Floating Card */}
               <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-sm rounded-2xl p-4 shadow-lg">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm text-gray-500">Featured Product</p>
+                    <p className="text-xs text-gray-500">Featured Product</p>
                     <p className="font-bold text-gray-900">Sea Buckthorn Juice</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-sm text-gray-400 line-through">₹1,250</span>
+                      <span className="font-bold text-orange-600 text-lg">₹999</span>
+                      <span className="bg-orange-100 text-orange-600 text-xs px-2 py-0.5 rounded-full font-medium">20% OFF</span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-500 line-through">₹1250</p>
-                    <p className="font-bold text-orange-600 text-xl">₹999</p>
-                  </div>
+                  <button
+                    onClick={handleAddToCart}
+                    className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex-shrink-0"
+                  >
+                    <ShoppingCart className="w-4 h-4" />
+                    Add to Cart
+                  </button>
                 </div>
               </div>
             </div>
