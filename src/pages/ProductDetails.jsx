@@ -32,6 +32,17 @@ export default function ProductDetails() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isAdding, setIsAdding] = useState(false);
 
+  // Track browsing history
+  React.useEffect(() => {
+    if (!productId) return;
+    const history = JSON.parse(localStorage.getItem('noorherbs_browsing') || '[]');
+    const exists = history.find(h => h.id === productId);
+    if (!exists) {
+      history.push({ id: productId, name: '', viewedAt: Date.now() });
+      localStorage.setItem('noorherbs_browsing', JSON.stringify(history.slice(-20)));
+    }
+  }, [productId]);
+
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', productId],
     queryFn: async () => {
@@ -322,17 +333,7 @@ export default function ProductDetails() {
           </div>
         )}
 
-        {/* Related Products */}
-        {relatedProducts.length > 0 && (
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">You May Also Like</h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map(p => (
-                <ProductCard key={p.id} product={p} onAddToCart={() => {}} />
-              ))}
-            </div>
-          </div>
-        )}
+        <AIRecommendations currentProductId={productId} title="You May Also Like" />
       </div>
     </div>
   );
