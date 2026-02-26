@@ -49,6 +49,9 @@ export default function Home() {
       <BestsellerSection products={products} onAddToCart={handleAddToCart} />
       <VideoReviewsSection />
       <WhyChooseUs />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <AIRecommendations title="Recommended For You" />
+      </div>
       <TestimonialSection />
       <WhatsAppButton />
     </div>
