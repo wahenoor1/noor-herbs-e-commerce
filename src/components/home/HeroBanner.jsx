@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 
 const PRODUCT_ID = '692d846e363964fa712ef3c8';
-const PRODUCT_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692d8181feb1ac797ea503b0/b914c6556_Untitled.png';
+const PRODUCT_IMAGE = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692d8181feb1ac797ea503b0/0099ce636_image.png';
 
 export default function HeroBanner() {
   const handleAddToCart = () => {
