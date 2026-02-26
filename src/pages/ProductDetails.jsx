@@ -22,6 +22,7 @@ import {
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import ProductCard from "@/components/products/ProductCard";
+import AIRecommendations from "@/components/recommendations/AIRecommendations";
 
 export default function ProductDetails() {
   const urlParams = new URLSearchParams(window.location.search);
