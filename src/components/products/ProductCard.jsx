@@ -51,6 +51,7 @@ export default function ProductCard({ product, onAddToCart }) {
               src={product.image_url || "https://images.unsplash.com/photo-1607346256330-dee7af15f7c5?w=400&h=400&fit=crop"} 
               alt={product.name}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1607346256330-dee7af15f7c5?w=400&h=400&fit=crop"; }}
             />
           </div>
         </Link>
