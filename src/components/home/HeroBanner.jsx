@@ -117,9 +117,9 @@ export default function HeroBanner() {
                     <p className="text-xs text-gray-500">Featured Product</p>
                     <p className="font-bold text-gray-900">Sea Buckthorn Juice</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-sm text-gray-400 line-through">₹1,250</span>
-                      <span className="font-bold text-orange-600 text-lg">₹999</span>
-                      <span className="bg-orange-100 text-orange-600 text-xs px-2 py-0.5 rounded-full font-medium">20% OFF</span>
+                      <span className="text-sm text-gray-400 line-through">₹2,000</span>
+                      <span className="font-bold text-orange-600 text-lg">₹1,399</span>
+                      <span className="bg-orange-100 text-orange-600 text-xs px-2 py-0.5 rounded-full font-medium">30% OFF</span>
                     </div>
                   </div>
                   <button
