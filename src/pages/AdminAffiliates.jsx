@@ -59,12 +59,18 @@ export default function AdminAffiliates() {
   const handleApprove = async (affiliate) => {
     updateAffiliate.mutate({ id: affiliate.id, data: { status: 'approved' } });
     
-    // Send approval email
-    await base44.integrations.Core.SendEmail({
-      to: affiliate.email,
-      subject: "Affiliate Account Approved - Noor Herbs",
-      body: `Dear ${affiliate.name},\n\nCongratulations! Your affiliate account has been approved.\n\nYour Affiliate ID: ${affiliate.affiliate_id}\n${affiliate.coupon_code ? `Your Coupon Code: ${affiliate.coupon_code}` : ''}\n\nYou can now login to your dashboard and start earning commissions.\n\nBest regards,\nNoor Herbs Team`
-    });
+    // Send approval email via backend function
+    try {
+      await base44.functions.invoke('sendAffiliateApprovalEmail', {
+        to: affiliate.email,
+        name: affiliate.name,
+        affiliate_id: affiliate.affiliate_id,
+        coupon_code: affiliate.coupon_code || ''
+      });
+      toast.success("Affiliate approved & email sent!");
+    } catch (e) {
+      toast.success("Affiliate approved!");
+    }
   };
 
   const handleDisable = (affiliate) => {
