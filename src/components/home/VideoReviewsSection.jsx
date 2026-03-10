@@ -42,12 +42,13 @@ export default function VideoReviewsSection() {
               className="aspect-[9/16] rounded-2xl overflow-hidden bg-gray-100 shadow-lg hover:shadow-xl transition-shadow"
             >
               <iframe 
-                src={`https://www.youtube.com/embed/${video.id}`}
+                src={`https://www.youtube.com/embed/${video.id}?origin=${window.location.origin}`}
                 title={video.title}
                 className="w-full h-full"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
+                referrerPolicy="strict-origin-when-cross-origin"
               />
             </motion.div>
           ))}
