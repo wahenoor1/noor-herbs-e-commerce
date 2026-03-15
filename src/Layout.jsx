@@ -18,6 +18,27 @@ export default function Layout({ children }) {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, [location.pathname, location.search]);
 
+  // Inject Google Analytics
+  useEffect(() => {
+    if (!document.getElementById('ga-gtag-script')) {
+      const script1 = document.createElement('script');
+      script1.id = 'ga-gtag-script';
+      script1.async = true;
+      script1.src = 'https://www.googletagmanager.com/gtag/js?id=G-3TVGE91JDB';
+      document.head.insertBefore(script1, document.head.firstChild);
+
+      const script2 = document.createElement('script');
+      script2.id = 'ga-gtag-init';
+      script2.innerHTML = `
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-3TVGE91JDB');
+      `;
+      document.head.insertBefore(script2, script1.nextSibling);
+    }
+  }, []);
+
   // Set SEO meta tags
   useEffect(() => {
     document.title = "Noor Herbs - Premium Ayurvedic & Herbal Products | Sea Buckthorn Juice from Ladakh";
