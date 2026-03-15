@@ -1,4 +1,18 @@
 import React, { useState, useEffect } from 'react';
+
+// Google Analytics
+if (typeof window !== 'undefined' && !window._gaLoaded) {
+  window._gaLoaded = true;
+  const script1 = document.createElement('script');
+  script1.async = true;
+  script1.src = 'https://www.googletagmanager.com/gtag/js?id=G-3TVGE91JDB';
+  document.head.appendChild(script1);
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  window.gtag = gtag;
+  gtag('js', new Date());
+  gtag('config', 'G-3TVGE91JDB');
+}
 import { useLocation } from 'react-router-dom';
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
