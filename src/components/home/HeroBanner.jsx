@@ -2,7 +2,6 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Leaf, Shield, Award, ShoppingCart } from "lucide-react";
 import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
@@ -57,13 +56,13 @@ export default function HeroBanner() {
             </p>
             
             <div className="flex flex-wrap gap-4 mb-10">
-              <Link to={createPageUrl("Shop")}>
+              <Link to="/Shop">
                 <Button size="lg" className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all">
                   Shop Now
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
-              <Link to={createPageUrl("About")}>
+              <Link to="/About">
                 <Button variant="outline" size="lg" className="px-8 py-6 text-lg rounded-full border-2 border-gray-300 hover:border-orange-400 hover:text-orange-600">
                   Learn More
                 </Button>
@@ -101,7 +100,7 @@ export default function HeroBanner() {
             className="relative"
           >
             <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-orange-50 to-amber-50">
-              <Link to={createPageUrl(`ProductDetails?id=${PRODUCT_ID}`)}>
+              <Link to={`/ProductDetails?id=${PRODUCT_ID}`}>
                 <img 
                   src={PRODUCT_IMAGE}
                   alt="Noor Herbal Sea Buckthorn Juice - Ayurvedic Nutraceutical from Ladakh"
