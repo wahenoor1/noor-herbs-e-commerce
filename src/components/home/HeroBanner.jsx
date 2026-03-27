@@ -15,7 +15,7 @@ export default function HeroBanner() {
     if (existingIndex > -1) {
       cart[existingIndex].quantity += 1;
     } else {
-      cart.push({ product_id: PRODUCT_ID, product_name: 'Sea Buckthorn Juice', product_image: PRODUCT_IMAGE, price: 999, quantity: 1 });
+      cart.push({ product_id: PRODUCT_ID, product_name: 'Sea Buckthorn Juice', product_image: PRODUCT_IMAGE, price: 1399, quantity: 1 });
     }
     localStorage.setItem('noorherbs_cart', JSON.stringify(cart));
     window.dispatchEvent(new Event('cartUpdated'));
